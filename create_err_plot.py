@@ -16,6 +16,10 @@ def create_err_plot(x_centers,y_centers,ra_centers,dec_centers,catalog_obj_ra,ca
    x_offset = (np.cos(-theta)*ra_offsets-np.sin(-theta)*dec_offsets)*40/(0.7253 *0.99857)  # these offsets are scaled so they
    y_offset = (np.sin(-theta)*ra_offsets+np.cos(-theta)*dec_offsets)*40/(0.7253 *0.99857)  # are easily seen on the plot
    total_offset = np.sqrt(ra_offsets**2+dec_offsets**2)
+   offsets2=total_offset**2
+   avg_offset2 = np.average(offsets2)
+   rms_offset = np.sqrt(avg_offset2)
+   print(rms_offset)
    
    #create line segments from the actual to calculated positions
    lines = []
@@ -31,6 +35,7 @@ def create_err_plot(x_centers,y_centers,ra_centers,dec_centers,catalog_obj_ra,ca
    plt.scatter(x_centers,y_centers,s=100,linestyle = '-',edgecolors='k',c=total_offset,cmap='Reds',vmin=0,vmax=1)
    lc = mc.LineCollection(lines,linewidths=2)
    a1.add_collection(lc)
+   a1.text(200,150,'rms offset='+str(rms_offset,)[0:6],color='green')
    a1.set_xlabel('X Pos (mm)')
    a1.set_ylabel('Y Pos (mm)')
    a1.set_xlim([174,436])
@@ -55,7 +60,6 @@ def create_err_plot(x_centers,y_centers,ra_centers,dec_centers,catalog_obj_ra,ca
    a3.set_ylim([-174,174])
 
    plt.subplots_adjust(wspace=.2)
-   plt.show()
    
    #save the figure
    figurefilename = output_file#input('Name for figure file:')
