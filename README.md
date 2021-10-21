@@ -13,6 +13,7 @@ These final WCS coordinates for the slits are recorded and output to a file, whe
 The standard way to run the code on a given mask FITS file is:
 
 from testreverseautoslitcode import xytowcs
+
 xytowcs(maskfilename,outputfilename)
 
 The code needs an input FITS file containing the mask information. That file must be in the format used by the UCO/Lick archive. These FITS files have multiple extensions, each containing a specific table. The code uses this structure to grab the mask information. If the FITS files do not have the correct format, the code will not know where to grab the necessary information for its calculations.

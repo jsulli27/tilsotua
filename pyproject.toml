@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "testreverseautoslitcode"
-version = "0.1.32"
+version = "0.1.33"
 description = "Test Compiling of Code"
 authors = ["Jessica Sullivan <jsulli27@nd.edu>"]
 
