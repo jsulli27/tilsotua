@@ -23,7 +23,7 @@ def create_err_plot(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,o
 
     #Download the PanSTARRS field image for the mask location
 
-    panstampscommand = 'panstamps --width=15 stack '+str(x_center)+' '+str(y_center)
+    panstampscommand = 'panstamps --width=15 --filter=g stack '+str(x_center)+' '+str(y_center)
     process2 = subprocess.Popen(panstampscommand.split(), stdout=subprocess.PIPE)
     output, error = process2.communicate()
     process2.wait()

@@ -20,13 +20,13 @@ def create_ds9_file(data,ra_centers,dec_centers,theta,catalog_object_ra,catalog_
     height1 = str(np.abs(np.max(data['Y'][0:4])-np.min(data['Y'][0:4]))/3600)
 #=================================================================================================================================
 #write out boxes to the reg_string
-    reg_list ='icrs\nbox('+str_data['RA_Center'][0]+','+str_data['Dec_Center'][0]+','+width1+','+height1+','+pa+') # color=red'
+    reg_list ='icrs\nbox('+str_data['RA_Center'][0]+','+str_data['Dec_Center'][0]+','+width1+','+height1+','+pa+') # color=green\n'
 
     i=4
     while i in range(1,int(len(str_data))):#-4):
         width = str(np.abs(np.max(data['X'][i:i+4])-np.min(data['X'][i:i+4]))/(0.7253 *0.99857*3600))
         height = str(np.abs(np.max(data['Y'][i:i+4])-np.min(data['Y'][i:i+4]))/(0.7253 *0.99857*3600))
-        reg_string='nbox('+str_data['RA_Center'][i]+','+str_data['Dec_Center'][i]+','+width+','+height+','+pa+') # color=red'
+        reg_string='box('+str_data['RA_Center'][i]+','+str_data['Dec_Center'][i]+','+width+','+height+','+pa+') # color=green\n'
         reg_list = reg_list + reg_string
         i = i+4
 #=================================================================================================================================
