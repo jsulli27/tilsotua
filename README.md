@@ -4,54 +4,44 @@ This code calculates the WCS positions of slits from slitmasks designed for the 
 
 # Overview
 
-This code takes data on the masks created for LRIS and stored in the LRIS archive and turn that data into useful information that allows . The code relies heavily on the routines developed for the autoslit3 code that is used to generate masks for LRIS.
-
-The code takes input values for the locations of slits on a mask designed for LRIS in X,Y coordinates and reversing the major steps taken by the autoslit3 code. These steps include precessing the equinox and completing a reverse gnomic projection from X,Y coordinates to WCS coordinates.
-
-The code then calculates a shift correction for the calculated slit positions based on the location of catalog objects.
+This code takes archival FITS slitmask files for LRIS containing the positions of slits in those masks in the coordinate frame of the slitmask milling machine and reverses the steps taken by the [autoslit3](https://www2.keck.hawaii.edu/inst/lris/autoslit_WMKO.html) code (originally used to create the slitmasks) to obtain the WCS coordinates of the slits. A final astrometric correction (shift) is then applied to bring the mask results into agreement with the GAIA frame.
 
 These final WCS coordinates for the slits are recorded and output to a file, where they can then be used with the archive of LRIS observations.
 
 # Using the Code
 
-The code needs an input FITS file containing the mask information. That file must be in the format used by the LRIS archive. These FITS files have multiple extensions, each containing a specific table. The code uses this structure to grab the mask information. If the FITS files do not have the correct format, the code will not know where to grab the necessary information for its calculations.
+The standard way to run the code on a given mask FITS file is:
 
-The user gives the fits file name to the code and a name for the first CSV output file and the ds9 region file. The code then opens the file and reads in the center RA and Dec of the mask, the equinox of those coordinates, and the rotation angle.
+from testreverseautoslitcode import xytowcs
+xytowcs(maskfilename,outputfilename)
 
-The code then reads in the X,Y positions for the corners of each slit and completes a simple linear transformation between the mask milling machine coordinate system and the mask coordinate system (discussed in detail later) before completing the reverse gnomic projection.
+The code needs an input FITS file containing the mask information. That file must be in the format used by the UCO/Lick archive. These FITS files have multiple extensions, each containing a specific table. The code uses this structure to grab the mask information. If the FITS files do not have the correct format, the code will not know where to grab the necessary information for its calculations.
 
-With the WCS coordinates for the slits calculated in the equinox given by the mask at this point, the results are precessed to J2000 coordinates before being used for comparison against catalog objects. An average shift is calculated using the different between the raw slit positions of the guide star boxes and the catalog object positions selected at the targets meant to go in those boxes. This shift is applied to the raw slit positions and used as the final slit position.
+The given output filename will be used as the base for all four output files produced by the code.
 
-The code then writes out the ds9 region file with the details of the slits and creates the error plot. The error plot shows the difference between the center of the box positions and the catalog object positions and contains a line for each point representing the direction and (not to scale) magnitude of the offset.
+# Note on Astrometric (Shift) Correction
 
-The user provides a file name for the figure file and the second CSV file that goes along with it.
+The code defaults to using the GAIA catalog to calculate a correction to bring the slit positions into agreement with modern astrometry. There code does allow for use of the PanSTARRS catalog or a custom catalog of objects if the GAIA catalog
 
-# Parameters
-
-The user is able to choose which catalog is queried, either PanSTARRS or GAIA, to calculate a shift. This is done with the catalog_keyword variable, which can be set to GAIA or Pan-STARRS.
-
-Right now this variable is set at the beginning of the main routine, but in the future, it would be a good idea to make input parameters that can be selected by the user.
 
 # Code Outputs
 
-The code outputs four files: two CSV files, one PNG file, and one ds9 region file. These are named by the user.
+The code outputs four files: an updated FITS file, a CSV file, a PDF file, and a DS9 region file.
 
-The first CSV file contains the slit corner positions on the mask in X,Y coordinates and the calculated RA and Dec position. This means that for each box/slit, there are four rows in this file.
+The updated FITS file is a copy of the original mask FITS file with the previously blank columns meant to record the slit center RA and slit center Dec positions filled in.
 
-The region file creates polygon shapes using those four corners of the slits. These can be used in conjunction with an image of the field covered by the mask to see where the slits are calculated to lay and what objects the slits contain.
+The PDF is the quick look plot generated by the code that shows the mask slit positions on the full mask field as well as zoomed in images around up to 6 alignment boxes with the selected corresponding GAIA catalog objects marked.
 
-These files are created in the same directory the code is in.
+The CSV file contains the original coordinates of the slit corners in the mask coordinate frame, the calculated WCS positions of the slit corners, the slit center positions in both coordinate frames, and the coordinates of the GAIA catalog objects selected to go in the alignment boxes (zeros are recorded for non alignment box slits).
 
-The image of the error plot is saved and the second CSV file is written containing all the information necessary to reproduce the figure. This information includes the box center positions in X,Y, the WCS position of the box centers, the catalog object WCS position, and the offsets in X and Y directions.
-
-The figure file is saved to a directory named ‘Figures’, while the CSV file is saved in the same directory as the code. (note: the code does not automatically create the ‘Figures’ directory at the moment.)
+The DS9 region file contains the final slit positions for use in DS9.
 
 # Other Useful information
 
-The code is made of three files. ‘LRIS_Mask_Coordiantes.py’ contains the main routine for the code. ‘Find_shifts.py’ contains the function to calculate the offsets between the initial box centers and the catalog objects. ‘Create_err_plot.py’ generates the diagnostic plots and the files that go with those plots.
+'LRIS_Mask_Coords_to_WCS.py' contains the main function, which begins by reading the FITS file information and ends with writing the output files.
+'astrometrycorrection.py' contains the routine for the distortion correction at the LRIS focal plane.
+'precessionoutine.py' and 'refractioncorrection.py' contain the precession and refraction routines adapted from autoslit3.
+'find_shifts.py' contains the function for finding the astrometry correction (shift) based on GAIA catalog object positions.
+'create_err_plot.py' contains the function for writing the quick look plot.
 
-For now these files need to be in the same directory.
-
-# Limitations
-
-There may also be fundamental limitations due to the accuracy of the input astrometry used to create a mask.
+The version of autoslit3 originally used to create the mask will affect the plate scale assumed when designing the mask due to the Atmospheric Dispersion Corrector (ADC) being installed. Our code makes a general cut on whether the pre or post-ADC plate scale was used based on the mask design date (pre August 2007 masks are assumed to be pre-ADC). This can be manually changed if needed.

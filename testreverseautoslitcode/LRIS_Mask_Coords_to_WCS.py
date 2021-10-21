@@ -245,7 +245,10 @@ def xytowcs(data_input_name,output_file):
 
     #create the error plot
     print('-----------------Creating Quick Look Plot---------------')
-    create_err_plot(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,output_file)
+    try:
+        cep.create_err_plot(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,output_file)
+    except:
+        print('ISSUE WITH CREATING QUICK LOOK PLOT...CHECK RESULTS')
     w9f.create_ds9_file(data,ra_shifted_centers,dec_shifted_centers,rot_angle,catalog_obj_ra,catalog_obj_dec,output_file)
 #=====================================================================================================================================
 #update the fits file extension to include the calculated center positions of the slits

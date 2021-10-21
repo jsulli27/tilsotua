@@ -203,11 +203,13 @@ def get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccent
         ra_shift_final = np.float64(0.0)
         dec_shift_final = np.float64(0.0)
         print('---------No Systematic Shift Found. No Shift Applied---------')
-    print('ratio',total_shift_final/total_shift_dispersion)
-    if 0.70 < total_shift_final/total_shift_dispersion:
+    if 0.70 < total_shift_dispersion/total_shift_final:
         ra_shift_final = np.float64(0.0)
         dec_shift_final = np.float64(0.0)
         print('---------No Systematic Shift Found. No Shift Applied---------')
+
+    ra_shifted_centers = ra_centers-ra_shift_final
+    dec_shifted_centers = dec_centers-dec_shift_final
     print('Final Shift:',str(round(total_shift_final,3))+'+/-'+str(round(total_shift_dispersion,3)))
 
 
