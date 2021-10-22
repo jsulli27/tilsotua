@@ -3,7 +3,7 @@ import os
 
 here = os.path.dirname(os.path.abspath(__file__))
 
-long_description = (here / 'README.md').read_text(encoding='utf-8')
+long_description = (here +'/README.md').read_text(encoding='utf-8')
 
 setuptools.setup(
     name="testreverseautoslitcode",
