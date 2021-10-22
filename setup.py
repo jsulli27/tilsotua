@@ -23,7 +23,7 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    package_dir={"": "testreverseautoslitcode"},
+    package_dir={"": "LRIS-X-Y-to-WCS"},
     packages=setuptools.find_packages(where="."),
     install_requires=[
     "astropy >= 4.3.post1",
