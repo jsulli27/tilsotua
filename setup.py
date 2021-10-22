@@ -1,7 +1,8 @@
 import setuptools
+import pathlib
 
-with open("README.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
+here = pathlib.Path(__file__).parent.resolve()
+long_description = (here / 'README.md').read_text(encoding='utf-8')
 
 setuptools.setup(
     name="testreverseautoslitcode",
@@ -9,6 +10,8 @@ setuptools.setup(
     author="Jessica Sullivan",
     author_email="jsulli27@nd.edu",
     description="Test Compiling of Code",
+    long_description =  long_description,
+    long_description_content_type='text/markdown',
     url="https://github.com/jsulli27/LRIS-X-Y-to-WCS",
     project_urls={
         "Bug Tracker": "https://github.com/jsulli27/LRIS-X-Y-to-WCS/issues",
