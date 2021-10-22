@@ -1,11 +1,11 @@
 [tool.poetry]
 name = "testreverseautoslitcode"
-version = "0.1.34"
+version = "0.1.35"
 description = "Test Compiling of Code"
 authors = ["Jessica Sullivan <jsulli27@nd.edu>"]
 
 [tool.poetry.dependencies]
-python = "3.7"
+python = "^3.7"
 astropy = "4.3.post1"
 matplotlib = "3.4.2"
 panstamps = "0.6.1"
