@@ -1,7 +1,8 @@
 import setuptools
-import pathlib
+import os
 
-here = pathlib.Path(__file__).parent.resolve()
+here = os.path.dirname(os.path.abspath(__file__))
+
 long_description = (here / 'README.md').read_text(encoding='utf-8')
 
 setuptools.setup(
