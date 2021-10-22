@@ -24,7 +24,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     package_dir={"": "testreverseautoslitcode"},
-    packages=setuptools.find_packages(where="testreverseautoslitcode"),
+    packages=setuptools.find_packages(where="."),
     install_requires=[
     "astropy >= 4.3.post1",
     "matplotlib >= 3.4.2",
