@@ -40,9 +40,13 @@ The DS9 region file contains the final slit positions for use in DS9.
 # Other Useful information
 
 'LRIS_Mask_Coords_to_WCS.py' contains the main function, which begins by reading the FITS file information and ends with writing the output files.
+
 'astrometrycorrection.py' contains the routine for the distortion correction at the LRIS focal plane.
+
 'precessionoutine.py' and 'refractioncorrection.py' contain the precession and refraction routines adapted from autoslit3.
+
 'find_shifts.py' contains the function for finding the astrometry correction (shift) based on GAIA catalog object positions.
+
 'create_err_plot.py' contains the function for writing the quick look plot.
 
 The version of autoslit3 originally used to create the mask will affect the plate scale assumed when designing the mask due to the Atmospheric Dispersion Corrector (ADC) being installed. Our code makes a general cut on whether the pre or post-ADC plate scale was used based on the mask design date (pre August 2007 masks are assumed to be pre-ADC). This can be manually changed if needed.
