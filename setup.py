@@ -1,9 +1,10 @@
 import setuptools
-import os
+import pathlib
 
-here = os.path.dirname(os.path.abspath(__file__))
+here = pathlib.Path(__file__).parent.resolve()
 
-long_description = (here +'/README.md').read_text(encoding='utf-8')
+# Get the long description from the README file
+long_description = (here / 'README.md').read_text(encoding='utf-8')
 
 setuptools.setup(
     name="testreverseautoslitcode",
