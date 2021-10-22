@@ -1,4 +1,4 @@
-## Reverse Autoslit Code
+# Reverse Autoslit Code
 
 This code calculates the WCS positions of slits from slitmasks designed for the Low-Resolution Imaging Spectrograph (LRIS) on the Keck I telescope.
 
@@ -7,6 +7,12 @@ This code calculates the WCS positions of slits from slitmasks designed for the 
 This code takes archival FITS slitmask files for LRIS containing the positions of slits in those masks in the coordinate frame of the slitmask milling machine and reverses the steps taken by the [autoslit3](https://www2.keck.hawaii.edu/inst/lris/autoslit_WMKO.html) code (originally used to create the slitmasks) to obtain the WCS coordinates of the slits. A final astrometric correction (shift) is then applied to bring the mask results into agreement with the GAIA frame.
 
 These final WCS coordinates for the slits are recorded and output to a file, where they can then be used with the archive of LRIS observations.
+
+# Installation
+
+Clone the GitHub repository with: git clone https://github.com/jsulli27/testreverseautoslitcode.git
+
+Change to the package directory and run: pip install .
 
 # Using the Code
 
