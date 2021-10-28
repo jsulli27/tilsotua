@@ -12,7 +12,9 @@ These final WCS coordinates for the slits are recorded and output to a file, whe
 
 Clone the GitHub repository with:
 
-```git clone https://github.com/jsulli27/testreverseautoslitcode.git```
+```
+    git clone https://github.com/jsulli27/testreverseautoslitcode.git
+```
 
 Change to the package directory and run:
 
