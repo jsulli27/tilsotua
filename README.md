@@ -1,4 +1,4 @@
-# Reverse Autoslit Code
+# Reverse Autoslit Code: TILSOTUA
 
 This code calculates the WCS positions of slits from slitmasks designed for the Low-Resolution Imaging Spectrograph (LRIS) on the Keck I telescope.
 
@@ -13,13 +13,13 @@ These final WCS coordinates for the slits are recorded and output to a file, whe
 Clone the GitHub repository with:
 
 ```
-    git clone https://github.com/jsulli27/testreverseautoslitcode.git
+    git clone https://github.com/jsulli27/tilsotua.git
 ```
 
 Change to the package directory and run:
 
 ```
-    cd testreverseautoslitcode/
+    cd tilsotua/
     pip install .
 ```
 
@@ -28,7 +28,7 @@ Change to the package directory and run:
 The standard way to run the code on a given mask FITS file is:
 
 ```
-    from testreverseautoslitcode import xytowcs
+    from tilsotua import xytowcs
 
     xytowcs(maskfilename,outputfilename)
 ```
@@ -60,10 +60,10 @@ The DS9 region file contains the final slit positions for use in DS9.
 
 `astrometrycorrection.py` contains the routine for the distortion correction at the LRIS focal plane.
 
-`precessionoutine.py` and `refractioncorrection.py` contain the precession and refraction routines adapted from autoslit3.
+`precessionoutine.py` and `refractioncorrection.py` contain the precession and refraction routines adapted from `autoslit3`.
 
 `find_shifts.py` contains the function for finding the astrometry correction (shift) based on GAIA catalog object positions.
 
 `create_err_plot.py` contains the function for writing the quick look plot.
 
-The version of autoslit3 originally used to create the mask will affect the plate scale assumed when designing the mask due to the Atmospheric Dispersion Corrector (ADC) being installed. Our code makes a general cut on whether the pre or post-ADC plate scale was used based on the mask design date (pre August 2007 masks are assumed to be pre-ADC). This can be manually changed if needed.
+The version of `autoslit3` originally used to create the mask will affect the plate scale assumed when designing the mask due to the Atmospheric Dispersion Corrector (ADC) being installed. Our code makes a general cut on whether the pre or post-ADC plate scale was used based on the mask design date (pre August 2007 masks are assumed to be pre-ADC). This can be manually changed if needed.
