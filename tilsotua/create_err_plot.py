@@ -14,7 +14,7 @@ from astropy.visualization import PercentileInterval, ImageNormalize
 from glob import glob
 from matplotlib.gridspec import GridSpec
 
-#Function to create the quick look plots of teh mask results
+#Function to create the quick look plots of the mask results
 def create_err_plot(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,output_file):
 
     #Calculate the center of the mask to provide PanSTAMPS to download the image for the mask field  (should I just send over the actual center coords)
