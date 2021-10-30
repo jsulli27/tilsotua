@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "testreverseautoslitcode"
-version = "0.1.35"
-description = "Test Compiling of Code"
+name = "tilsotua"
+version = "0.1.36"
+description = "tilsotua: reverse autoslit calculations of LRIS slitmasks"
 authors = ["Jessica Sullivan <jsulli27@nd.edu>"]
 
 [tool.poetry.dependencies]

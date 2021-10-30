@@ -8,8 +8,9 @@ from astropy.io import ascii,fits
 from astropy.time import Time
 from regions import DS9Parser, write_ds9
 import astropy.units as u
-from testreverseautoslitcode import find_shifts as fs
-from testreverseautoslitcode import LRIS_Mask_Coords_to_WCS as lriscoords
+
+import tilsotua.find_shifts as fs
+import tilsotua.LRIS_Mask_Coords_to_WCS as lriscoords
 
 '''
 Read in the input file from the command line

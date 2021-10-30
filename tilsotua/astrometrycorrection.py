@@ -61,7 +61,7 @@ def astrometry_calc(ra_center,dec_center):
             y_offsets.append(y_offset)
             offset = np.sqrt(x_offset**2+y_offset**2)
             offsets.append(offset)
-#=================================================================================================================================            
+#=================================================================================================================================
     #create the astropy table and fill it in
     astrometry_results= Table()
     x_aparent = Column(x_values, name='Aparent X')
