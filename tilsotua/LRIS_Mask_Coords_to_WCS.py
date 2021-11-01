@@ -9,12 +9,6 @@ from astropy.table import Table,Column
 from astropy.io import ascii,fits
 from astropy.time import Time
 import astropy.units as u
-# from testreverseautoslitcode import find_shifts as fs
-# from testreverseautoslitcode import refractioncorrection as ref
-# from testreverseautoslitcode import astrometrycorrection as ac
-# from testreverseautoslitcode import create_err_plot
-# from testreverseautoslitcode import write_ds9_file as w9f
-# from testreverseautoslitcode import precessionroutine as pr
 
 import tilsotua.find_shifts as fs
 import tilsotua.refractioncorrection as ref
