@@ -123,7 +123,7 @@ def xytowcs(data_input_name,output_file):
 
     if len(hdu) == 9:
         ref_system = str(np.chararray.lower(str(hdu[3].data['RADEPNT'][0])))
-        if ref_system = '':
+        if ref_system == '':
             ref_system = 'fk5'
     else:
         ref_system = str(np.chararray.lower(str(hdu[2].data['RADEPNT'][0])))
