@@ -44,19 +44,27 @@ def xytowcs(data_input_name,output_file):
     copyfile(data_input_name, output_file+'.fits')
 #Open the copied file
     hdu=fits.open(output_file+'.fits',mode='update')
-    maskbluID = str(hdu[5].data['BluID'][0])
+    if len(hdu) == 9:
+        maskbluID = str(hdu[6].data['BluID'][0])
+    else:
+        maskbluID = str(hdu[5].data['BluID'][0])
 
 #obtain the rotation angle of the instrument
-
-    rot_angle = hdu[2].data['PA_PNT'][0]
+    if len(hdu) == 9:
+        rot_angle = hdu[3].data['PA_PNT'][0]
+    else:
+        rot_angle = hdu[2].data['PA_PNT'][0]
 
     print('Rotation Angle is selected at:',rot_angle)
 
 #get the reference ra and dec
 #assume this to be the center of the image
-
-    ra0,dec0,equ = hdu[2].data['RA_PNT'][0], hdu[2].data['DEC_PNT'][0],str(hdu[2].data['EQUINPNT'][0])
-    epoch = hdu[2].data['EQUINPNT'][0]
+    if len(hdu) == 9:
+        ra0,dec0,equ = hdu[3].data['RA_PNT'][0], hdu[3].data['DEC_PNT'][0],str(hdu[3].data['EQUINPNT'][0])
+        epoch = hdu[3].data['EQUINPNT'][0]
+    else:
+        ra0,dec0,equ = hdu[2].data['RA_PNT'][0], hdu[2].data['DEC_PNT'][0],str(hdu[2].data['EQUINPNT'][0])
+        epoch = hdu[2].data['EQUINPNT'][0]
 
 #================================================================================================================================
     #Correct the center of the mask for refraction
@@ -97,7 +105,10 @@ def xytowcs(data_input_name,output_file):
     dec0 = str(dec0/rpd)
 
     #Grab the date the mask was made
-    creation_date = hdu[2].data['DesDate'][0]
+    if len(hdu) == 9:
+        creation_date = hdu[3].data['DesDate'][0]
+    else:
+        creation_date = hdu[2].data['DesDate'][0]
 
     #Set the mask scale. This depends on whether the mask was made to be used with or without the ADC (ADC installed for B semester of 2007)
     if Time(creation_date) > Time('2007-08-01'):
@@ -110,7 +121,10 @@ def xytowcs(data_input_name,output_file):
         adcuse = 'pre'
     x0 = x_center / scale
 
-    ref_system = str(np.chararray.lower(str(hdu[2].data['RADEPNT'][0])))
+    if len(hdu) == 9:
+        ref_system = str(np.chararray.lower(str(hdu[3].data['RADEPNT'][0])))
+    else:
+        ref_system = str(np.chararray.lower(str(hdu[2].data['RADEPNT'][0])))
 
 #convert reference ra,dec to decimal degrees
 #correct for precession of coordiantes based on the equinox they are given in
@@ -126,19 +140,35 @@ def xytowcs(data_input_name,output_file):
 #read in the slit data
     print('------------Reading in Slit Data-----------------')
     data = Table()
-    x1col = Column(hdu[6].data['slitX1'][0:1], name='slitX1', dtype=float)
-    y1col = Column(hdu[6].data['slitY1'][0:1], name='slitY1', dtype=float)
-    data.add_column(x1col)
-    data.add_column(y1col)
-    data.add_row([hdu[6].data['slitX2'][0],hdu[6].data['slitY2'][0]])
-    data.add_row([hdu[6].data['slitX3'][0],hdu[6].data['slitY3'][0]])
-    data.add_row([hdu[6].data['slitX4'][0],hdu[6].data['slitY4'][0]])
+    if len(hdu) == 9:
+        x1col = Column(hdu[7].data['slitX1'][0:1], name='slitX1', dtype=float)
+        y1col = Column(hdu[7].data['slitY1'][0:1], name='slitY1', dtype=float)
+        data.add_column(x1col)
+        data.add_column(y1col)
+        data.add_row([hdu[7].data['slitX2'][0],hdu[7].data['slitY2'][0]])
+        data.add_row([hdu[7].data['slitX3'][0],hdu[7].data['slitY3'][0]])
+        data.add_row([hdu[7].data['slitX4'][0],hdu[7].data['slitY4'][0]])
 
-    for i in range(1,len(hdu[6].data['slitX1'])):
-        data.add_row([hdu[6].data['slitX1'][i],hdu[6].data['slitY1'][i]])
-        data.add_row([hdu[6].data['slitX2'][i],hdu[6].data['slitY2'][i]])
-        data.add_row([hdu[6].data['slitX3'][i],hdu[6].data['slitY3'][i]])
-        data.add_row([hdu[6].data['slitX4'][i],hdu[6].data['slitY4'][i]])
+        for i in range(1,len(hdu[7].data['slitX1'])):
+            data.add_row([hdu[7].data['slitX1'][i],hdu[7].data['slitY1'][i]])
+            data.add_row([hdu[7].data['slitX2'][i],hdu[7].data['slitY2'][i]])
+            data.add_row([hdu[7].data['slitX3'][i],hdu[7].data['slitY3'][i]])
+            data.add_row([hdu[7].data['slitX4'][i],hdu[7].data['slitY4'][i]])
+    else:
+
+        x1col = Column(hdu[6].data['slitX1'][0:1], name='slitX1', dtype=float)
+        y1col = Column(hdu[6].data['slitY1'][0:1], name='slitY1', dtype=float)
+        data.add_column(x1col)
+        data.add_column(y1col)
+        data.add_row([hdu[6].data['slitX2'][0],hdu[6].data['slitY2'][0]])
+        data.add_row([hdu[6].data['slitX3'][0],hdu[6].data['slitY3'][0]])
+        data.add_row([hdu[6].data['slitX4'][0],hdu[6].data['slitY4'][0]])
+
+        for i in range(1,len(hdu[6].data['slitX1'])):
+            data.add_row([hdu[6].data['slitX1'][i],hdu[6].data['slitY1'][i]])
+            data.add_row([hdu[6].data['slitX2'][i],hdu[6].data['slitY2'][i]])
+            data.add_row([hdu[6].data['slitX3'][i],hdu[6].data['slitY3'][i]])
+            data.add_row([hdu[6].data['slitX4'][i],hdu[6].data['slitY4'][i]])
 
     data.rename_column('slitX1','X')
     data.rename_column('slitY1','Y')
@@ -256,8 +286,12 @@ def xytowcs(data_input_name,output_file):
     w9f.create_ds9_file(data,ra_shifted_centers,dec_shifted_centers,rot_angle,catalog_obj_ra,catalog_obj_dec,output_file)
 #=====================================================================================================================================
 #update the fits file extension to include the calculated center positions of the slits
-    hdu[3].data['slitRA'] = data['RA_Center'][::4]
-    hdu[3].data['slitDec'] = data['Dec_Center'][::4]
+    if len(hdu) == 9:
+        hdu[4].data['slitRA'] = data['RA_Center'][::4]
+        hdu[4].data['slitDec'] = data['Dec_Center'][::4]
+    else:
+        hdu[3].data['slitRA'] = data['RA_Center'][::4]
+        hdu[3].data['slitDec'] = data['Dec_Center'][::4]
     hdu.flush()
 
 #write out the data and results to the output file
