@@ -13,7 +13,7 @@ import astropy.units as u
 import tilsotua.find_shifts as fs
 import tilsotua.refractioncorrection as ref
 import tilsotua.astrometrycorrection as ac
-import tilsotua.create_err_plot
+import tilsotua.create_quicklookplot
 import tilsotua.write_ds9_file as w9f
 import tilsotua.precessionroutine as pr
 
@@ -249,7 +249,7 @@ def xytowcs(data_input_name,output_file):
     #create the error plot
     print('-----------------Creating Quick Look Plot---------------')
     try:
-        create_err_plot(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,output_file)
+        create_qlp(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,output_file)
     except:
         print('ISSUE WITH QUICK LOOK PLOT...CHECK RESULTS')
 
