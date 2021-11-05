@@ -1,5 +1,5 @@
 from .astrometrycorrection import *
-from .create_err_plot import *
+from .create_quicklookplot import *
 from .find_shifts import *
 from .LRIS_Mask_Coords_to_WCS import *
 from .precessionroutine import *
