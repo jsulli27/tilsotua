@@ -21,6 +21,25 @@ import tilsotua.precessionroutine as pr
 from shutil import copyfile
 
 def xytowcs(data_input_name:str,output_file:str)->None:
+    """
+    Function to convert slit coordinates in the mask frame
+    to equatorial coordinates (RA,Dec). Generates a CSV
+    file and a FITS file with the RA, Dec information
+    corresponding to each slit center. The output FITS
+    file has the same structure as the input file but has
+    the missing data filled in.
+
+    Args:
+        data_input_name (str): Path to the input FITS file
+            from the mask design ingestion process. i.e. the
+            FITS file generated when AUTOSLIT .file3 ascii
+            files are fed mask submission webpage.
+        output_file (str): Name of the output file you'd
+            like to generate. DO NOT INCLUDE FILE EXTENSIONS
+            like .fits or .csv. e.g. "output_file".
+    Returns:
+        None
+    """
 
     #set up some constants
     rpd = np.pi/180. #radians per degree
@@ -253,3 +272,4 @@ def xytowcs(data_input_name:str,output_file:str)->None:
 
     #write out the data and results to the output file
     ascii.write(data,output_file+'.csv',format='csv',overwrite=True)
+    return
