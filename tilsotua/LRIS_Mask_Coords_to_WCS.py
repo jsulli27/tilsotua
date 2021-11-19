@@ -29,34 +29,34 @@ def xytowcs(data_input_name:str,output_file:str)->None:
     mask_angle = 8.06 * rpd #angle of mask to the focal plane
     bend = 1.94 * rpd #angle of the bend in the mask
     x_center = 305. #point treated as the center on the ccd
-  #  catalog_keyword = 'panstarrs'   #uncomment the desired catalog to be used
+    #  catalog_keyword = 'panstarrs'   #uncomment the desired catalog to be used
     catalog_keyword = 'gaia'
- #   catalog_keyword = 'custom'
+    #   catalog_keyword = 'custom'
     if catalog_keyword == 'custom':
         catalog_file = input('Catalog filename:')
     else:
         catalog_file = ''
 
-#================================================================================================================================
+    #================================================================================================================================
 
-#read in the data\
-#copy the original file to a new file that will be the one to which the results are added
+    #read in the data\
+    #copy the original file to a new file that will be the one to which the results are added
     copyfile(data_input_name, output_file+'.fits')
-#Open the copied file
+    #Open the copied file
     hdu=fits.open(output_file+'.fits',mode='update')
     maskbluID = str(hdu['MaskBlu'].data['BluID'][0])
 
-#obtain the rotation angle of the instrument
+    #obtain the rotation angle of the instrument
     mask_design = hdu['MaskDesign'].data[0]
     rot_angle = mask_design['PA_PNT']
     print('Rotation Angle is selected at:',rot_angle)
 
-#get the reference ra and dec
-#assume this to be the center of the image
+    #get the reference ra and dec
+    #assume this to be the center of the image
     ra0,dec0,equ = mask_design['RA_PNT'], mask_design['DEC_PNT'],str(mask_design['EQUINPNT'])
     epoch = mask_design['EQUINPNT']
 
-#================================================================================================================================
+    #================================================================================================================================
     #Correct the center of the mask for refraction
     #Taken directly from autoslit
     HA = 0.   #hour angle
@@ -110,10 +110,10 @@ def xytowcs(data_input_name:str,output_file:str)->None:
     ref_system = str(mask_design['RADEPNT']).lower()
     if ref_system == '':
         ref_system = 'fk5'
-#convert reference ra,dec to decimal degrees
-#correct for precession of coordiantes based on the equinox they are given in
+    #convert reference ra,dec to decimal degrees
+    #correct for precession of coordiantes based on the equinox they are given in
 
-#set up SkyCoord object for the reference RA,Dec
+    #set up SkyCoord object for the reference RA,Dec
     temp = SkyCoord(ra0+' '+dec0,frame=ref_system,unit=(u.deg,u.deg),equinox='J'+equ)
     ra0 = temp.ra.deg
     dec0 = temp.dec.deg
@@ -121,7 +121,7 @@ def xytowcs(data_input_name:str,output_file:str)->None:
     deccenter = temp.dec.deg
     print('Reference Coordinates set at: (',ra0,',',dec0,')')
 
-#read in the slit data
+    #read in the slit data
     print('------------Reading in Slit Data-----------------')
     data = Table(names=['X','Y'], dtype=(float,float))
 
@@ -132,20 +132,16 @@ def xytowcs(data_input_name:str,output_file:str)->None:
         data.add_row([entry['slitX3'],entry['slitY3']])
         data.add_row([entry['slitX4'],entry['slitY4']])
 
-#The data from the html mask files is in the milling machine coordinate system. We have to convert to the mask coordinate
-#system before working with the data
-#x_mask = y_mill + 172.7
-#y+mask = -x_mill +177.8
+    #The data from the html mask files is in the milling machine coordinate system. We have to convert to the mask coordinate
+    #system before working with the data
+    #x_mask = y_mill + 172.7
+    #y+mask = -x_mill +177.8
 
-    x_mill = data['X']
-    y_mill = data['Y']
+    x_mill = data['X'].copy()
+    y_mill = data['Y'].copy()
 
-
-    for i in range(len(data['X'])):
-        a = y_mill[i]+172.7
-        b = -x_mill[i]+177.8
-        data['X'][i] = a
-        data['Y'][i] = b
+    data['X'] = y_mill + 172.7
+    data['Y'] = -x_mill + 177.8
 
     x_input = data['X']
     y_input = data['Y']
@@ -153,67 +149,77 @@ def xytowcs(data_input_name:str,output_file:str)->None:
     #apply the astrometry correction to the x,y values in the mask frame
     print('-------------------Applying Distortion Correction-------------------')
     astro_table = ac.astrometry_calc(ra0,dec0)
-    for i in range(len(data['X'])):
-        distance = np.zeros(len(astro_table))
-        for j in range(len(astro_table)):
-            distance[j] = np.sqrt(((data['X'][i]-astro_table['Aparent X'][j]))**2+(data['Y'][i]-astro_table['Aparent Y'][j])**2)
+    for entry in data:
+        #distance = np.zeros(len(astro_table))
+        #for j in range(len(astro_table)):
+        #    distance[j] = np.sqrt(((data['X'][i]-astro_table['Aparent X'][j]))**2+(data['Y'][i]-astro_table['Aparent Y'][j])**2)
+        distance = np.sqrt((entry['X']-astro_table['Aparent X'])**2+(entry['Y']-astro_table['Aparent Y'])**2)
         val = np.argmin(distance)
-        data['X'][i]= data['X'][i]-astro_table['X Offset'][val]
-        data['Y'][i]= data['Y'][i]-astro_table['Y Offset'][val]
+        entry['X'] -= astro_table['X Offset'][val]
+        entry['Y'] -= astro_table['Y Offset'][val]
 
 
-#add columns to data table to eventually hold the calculated RA and Dec for each object
+    #add columns to data table to eventually hold the calculated RA and Dec for each object
     data.add_column(0.00000000000,name='Calc_RA')
     data.add_column(0.00000000000,name='Calc_Dec')
 
-#=====================================================================================================================================
+    #=====================================================================================================================================
 
-#calculate the RA,Dec from mask coordinates
+    #calculate the RA,Dec from mask coordinates
 
-#take theta to negative theta (internal angle opposite to recorded position angle)
+    #take theta to negative theta (internal angle opposite to recorded position angle)
     theta = (-rot_angle) * rpd
 
     print('--------------------Completing Inverse Gnomic Projection--------------------')
-#have to correct the center coordiantes before inverse gnomic projectoin
+    #have to correct the center coordiantes before inverse gnomic projectoin
     ra0 = ra0*rpd - (x0*np.cos(theta)*rpas/np.cos(dec0*rpd))
     dec0 = dec0*rpd - x0*np.sin(theta)*rpas
 
-    for i in range(len(data['X'])):
+    #correct the x and y coords for the bend and tilt in the mask
+    x_prime = np.cos(mask_angle)*(x_input)/scale
+    y_prime = np.cos(bend)*(y_input)/scale
 
-#correct the x and y coords for the bend and tilt in the mask
-        x_prime = np.cos(mask_angle)*(x_input[i])/scale
-        y_prime = np.cos(bend)*(y_input[i])/scale
+    #take x,y to the eta and nu gnomic projection coordinates (rotation matrix)
+    eta = (np.cos(theta)*x_prime-np.sin(theta)*y_prime)*rpas
+    nu =  (np.sin(theta)*x_prime+np.cos(theta)*y_prime)*rpas
+    #take eta and nu to ra and dec (standard already calculated inversion)
+    rho = np.sqrt(eta**2+nu**2)
+    c = np.arctan2(rho,1.)
 
-#take x,y to the eta and nu gnomic projection coordinates (rotation matrix)
-        eta = (np.cos(theta)*x_prime-np.sin(theta)*y_prime)*rpas
-        nu =  (np.sin(theta)*x_prime+np.cos(theta)*y_prime)*rpas
-#take eta and nu to ra and dec (standard already calculated inversion)
-        rho = np.sqrt(eta**2+nu**2)
-        c = np.arctan2(rho,1.)
+    #calculate the final ra and dec using the inverse gnomic projection
+    ra_t = eta*np.sin(c)
+    ra_b = (rho*np.cos(dec0)*np.cos(c))-(nu*np.sin(dec0)*np.sin(c))
+    dec_f = np.cos(c)*np.sin(dec0)
+    dec_s = (nu*np.sin(c)*np.cos(dec0))/rho
+    RA = (ra0+np.arctan2(ra_t/ra_b,1.))/rpd
+    Dec = np.arcsin(dec_f+dec_s)/rpd
 
-#calculate the final ra and dec using the inverse gnomic projection
-        ra_t = eta*np.sin(c)
-        ra_b = (rho*np.cos(dec0)*np.cos(c))-(nu*np.sin(dec0)*np.sin(c))
-        dec_f = np.cos(c)*np.sin(dec0)
-        dec_s = (nu*np.sin(c)*np.cos(dec0))/rho
-        RA = (ra0+np.arctan2(ra_t/ra_b,1.))/rpd
-        Dec = np.arcsin(dec_f+dec_s)/rpd
+    data['Calc_RA']=RA
+    data['Calc_Dec']=Dec
 
-        data['Calc_RA'][i]=RA
-        data['Calc_Dec'][i]=Dec
-
-#===================================================================================================================================
+    #===================================================================================================================================
     #Now apply refraction correction to each of the points on the mask
     print('-----------------Calculating Refraction Lookup Table------------------------')
     refraction_table = ref.refraction_calc(racenter*rpd,deccenter*rpd)
     #apply correction for each point
-    for i in range(len(data['Calc_RA'])):
-        distance = np.zeros(len(refraction_table))
-        for j in range(len(refraction_table)):
-            distance[j] = np.sqrt(((data['Calc_RA'][i]-refraction_table['Aparent RA'][j])*np.cos(data['Calc_Dec'][i]))**2+(data['Calc_Dec'][i]-refraction_table['Aparent Dec'][j])**2)
-        val = np.argmin(distance)
-        data['Calc_RA'][i]= data['Calc_RA'][i]-refraction_table['RA Offset'][val]
-        data['Calc_Dec'][i]= data['Calc_Dec'][i]-refraction_table['Dec Offset'][val]
+    #for i in range(len(data['Calc_RA'])):
+    #    distance = np.zeros(len(refraction_table))
+    #    for j in range(len(refraction_table)):
+    #        distance[j] = np.sqrt(((data['Calc_RA'][i]-refraction_table['Aparent RA'][j])*np.cos(data['Calc_Dec'][i]))**2+(data['Calc_Dec'][i]-refraction_table['Aparent Dec'][j])**2)
+    #    val = np.argmin(distance)
+    #    data['Calc_RA'][i]= data['Calc_RA'][i]-refraction_table['RA Offset'][val]
+    #    data['Calc_Dec'][i]= data['Calc_Dec'][i]-refraction_table['Dec Offset'][val]
+#   
+    #apply correction for each point:
+    # First cross match the two catalogs. i.e. find closest object in refraction table for entry in data
+    refract_coords = SkyCoord(refraction_table['Aparent RA'], refraction_table['Aparent Dec'], unit="deg")
+    data_coords = SkyCoord(data['Calc_RA'], data['Calc_Dec'], unit="deg")
+    idx, _, _ = data_coords.match_to_catalog_sky(refract_coords)
+    matched_refraction_tab = refraction_table[idx]
+
+    # Apply offsets based on cross match. Not worrying about the cross-match separation threshold here.
+    data['Calc_RA'] -= matched_refraction_tab['RA Offset']
+    data['Calc_Dec'] -= matched_refraction_tab['Dec Offset']
 
     for i in range(len(data['Calc_RA'])):
          temp1 = pr.precession(data['Calc_RA'][i],data['Calc_Dec'][i],epoch,2000.)
@@ -226,8 +232,8 @@ def xytowcs(data_input_name:str,output_file:str)->None:
 #        data['Calc_RA'][i] = temp1.ra.deg
 #        data['Calc_Dec'][i] = temp1.dec.deg
 
-#====================================================================================================================================
-#calculate the average offset for the dataset and refraction correction
+    #====================================================================================================================================
+    #calculate the average offset for the dataset and refraction correction
     print('----------------Calculating Mask Shift-----------------')
     data,x_centers,y_centers,ra_shifted_centers,dec_shifted_centers,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec = fs.get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccenter,catalog_file,maskbluID,adcuse)
 
@@ -239,11 +245,11 @@ def xytowcs(data_input_name:str,output_file:str)->None:
         print('ISSUE WITH QUICK LOOK PLOT...CHECK RESULTS')
 
     w9f.create_ds9_file(data,ra_shifted_centers,dec_shifted_centers,rot_angle,catalog_obj_ra,catalog_obj_dec,output_file)
-#=====================================================================================================================================
-#update the fits file extension to include the calculated center positions of the slits
+    #=====================================================================================================================================
+    #update the fits file extension to include the calculated center positions of the slits
     hdu['DesiSlits'].data['slitRA'] = data['RA_Center'][::4]
     hdu['DesiSlits'].data['slitDec'] = data['Dec_Center'][::4]
     hdu.flush()
 
-#write out the data and results to the output file
+    #write out the data and results to the output file
     ascii.write(data,output_file+'.csv',format='csv',overwrite=True)
