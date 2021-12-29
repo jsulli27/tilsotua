@@ -19,6 +19,8 @@ import tilsotua.precessionroutine as pr
 
 from shutil import copyfile
 
+from IPython import embed
+
 def solve_2x2(a,b,c,d, vector):
     coeff = 1/(a*d-b*c)
     el1 = coeff*(vector[0]*d-b*vector[1])
@@ -95,50 +97,29 @@ def generate_object_cat(obj_file:str, file1:str, xy_map:Table, mag_band:str='I')
     SlitObjMap['DesId'] = 1 # Dunno why.
     SlitObjMap['dSlitId'] = np.arange(len(SlitObjMap))
 
-    # Compute top dist and botdist. For this, I'll need to read in the table from xytowcs
-    # ---------------------------------------------------------------------------------------------
-    x1 = xy_map['X'][::4]
-    y1 = xy_map['Y'][::4]
-
-    #x2 = xy_map['X'][1::4]
-    y2 = xy_map['Y'][1::4]
-
-    x4 = xy_map['X'][3::4]
-    #y4 = xy_map['Y'][3::4]
-
-    dx = x4-x1
-    dy = y2-y1
-
     alpha1 = xy_map['Calc_RA'][::4]
     delta1 = xy_map['Calc_Dec'][::4]
 
     alpha2 = xy_map['Calc_RA'][1::4]
     delta2 = xy_map['Calc_Dec'][1::4]
 
+    alpha3 = xy_map['Calc_RA'][2::4]
+    delta3 = xy_map['Calc_Dec'][2::4] 
+
     alpha4 = xy_map['Calc_RA'][3::4]
     delta4 = xy_map['Calc_Dec'][3::4]
 
-    d_alpha_dx = (alpha4-alpha1)/dx
-    d_alpha_dy = (alpha2-alpha1)/dy
+    coord_14 = SkyCoord((alpha1+alpha4)/2, (delta1+delta4)/2, unit="deg")
+    coord_23 = SkyCoord((alpha2+alpha3)/2, (delta2+delta3)/2, unit="deg")
 
-    d_delta_dx = (delta4-delta1)/dx
-    d_delta_dy = (delta2-delta1)/dy
+    objcoord = SkyCoord(obj_ra, obj_dec, unit="deg")
+    bot_dist = objcoord.separation(coord_23)
+    top_dist = objcoord.separation(coord_14)
+
+    SlitObjMap['TopDist'] = top_dist.to('arcsec').value
+    SlitObjMap['BotDist'] = bot_dist.to('arcsec').value
+
     import pdb; pdb.set_trace()
-    d_alpha = obj_ra-alpha1
-    d_delta = obj_dec-delta1
-
-    d_x1 = np.empty_like(obj_ra)
-    d_y1 = np.empty_like(obj_ra)
-
-    for idx, (a,b,c,d, d_a, d_d) in enumerate(zip(d_alpha_dx, d_alpha_dy, d_delta_dx, d_delta_dy, d_alpha, d_delta)):
-        d_x1[idx], d_y1[idx] = solve_2x2(a,b,c,d,(d_a, d_d))
-    
-    top_dist = np.abs(dy-d_y1) # Each slit has four corners. These correspond to the first corners for all slits
-    bot_dist = np.abs(d_y1) # This is the adjacent corner along the slit length.
-    #-------------------------------------------------------------------------------------------------
-
-    SlitObjMap['TopDist'] = top_dist
-    SlitObjMap['BotDist'] = bot_dist
 
     return ObjectCat, SlitObjMap
 
@@ -307,6 +288,9 @@ def xytowcs(data_input_name:str,output_file:str, obj_file:str=None, file1:str=No
 
     data['X'] = y_mill + 172.7
     data['Y'] = -x_mill + 177.8
+    data['X_mill'] = x_mill
+    data['Y_mill'] = y_mill
+
 
     x_input = data['X']
     y_input = data['Y']
@@ -361,6 +345,7 @@ def xytowcs(data_input_name:str,output_file:str, obj_file:str=None, file1:str=No
 
     data['Calc_RA']=RA
     data['Calc_Dec']=Dec
+    embed(header="367 of LRIS Mask Coords to WCS")
 
     #===================================================================================================================================
     #Now apply refraction correction to each of the points on the mask
