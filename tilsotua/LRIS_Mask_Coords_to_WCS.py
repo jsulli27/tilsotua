@@ -19,15 +19,8 @@ import tilsotua.precessionroutine as pr
 
 from shutil import copyfile
 
-from IPython import embed
-
-def solve_2x2(a,b,c,d, vector):
-    coeff = 1/(a*d-b*c)
-    el1 = coeff*(vector[0]*d-b*vector[1])
-    el2 = coeff*(-vector[0]*c+a*vector[1])
-    return el1 ,el2
-
-def generate_object_cat(obj_file:str, file1:str, xy_map:Table, mag_band:str='I')->Table:
+def generate_object_cat(obj_file:str, file1:str, xy_map:Table,
+                        mag_band:str='I')->Table:
     """
     Fill in the ObjectCat and SlitObjMap tables in the
     output fits file.
@@ -119,8 +112,6 @@ def generate_object_cat(obj_file:str, file1:str, xy_map:Table, mag_band:str='I')
     SlitObjMap['TopDist'] = top_dist.to('arcsec').value
     SlitObjMap['BotDist'] = bot_dist.to('arcsec').value
 
-    import pdb; pdb.set_trace()
-
     return ObjectCat, SlitObjMap
 
 def refraction_correction(ra0:float, dec0:float):
@@ -169,7 +160,7 @@ def refraction_correction(ra0:float, dec0:float):
     return DA1, DD1
 
 
-def xytowcs(data_input_name:str,output_file:str, obj_file:str=None, file1:str=None, mag_band:str='I')->None:
+def xytowcs(data_input_name:str,output_file:str,obj_file:str=None, file1:str=None, mag_band:str='I')->None:
     """
     Function to convert slit coordinates in the mask frame
     to equatorial coordinates (RA,Dec). Generates a CSV
@@ -269,14 +260,13 @@ def xytowcs(data_input_name:str,output_file:str, obj_file:str=None, file1:str=No
 
     #read in the slit data
     print('------------Reading in Slit Data-----------------')
-    data = Table(names=['X','Y'], dtype=(float,float))
-
     bluslits = hdu['BluSlits'].data
-    for entry in bluslits:
-        data.add_row([entry['slitX1'],entry['slitY1']])
-        data.add_row([entry['slitX2'],entry['slitY2']])
-        data.add_row([entry['slitX3'],entry['slitY3']])
-        data.add_row([entry['slitX4'],entry['slitY4']])
+
+    data = Table()
+    data['X'] = np.array([bluslits['slitX1'], bluslits['slitX2'],
+                          bluslits['slitX3'], bluslits['slitX4']]).T.flatten()
+    data['Y'] = np.array([bluslits['slitY1'], bluslits['slitY2'],
+                          bluslits['slitY3'], bluslits['slitY4']]).T.flatten()
 
     #The data from the html mask files is in the milling machine coordinate system. We have to convert to the mask coordinate
     #system before working with the data
@@ -288,8 +278,6 @@ def xytowcs(data_input_name:str,output_file:str, obj_file:str=None, file1:str=No
 
     data['X'] = y_mill + 172.7
     data['Y'] = -x_mill + 177.8
-    data['X_mill'] = x_mill
-    data['Y_mill'] = y_mill
 
 
     x_input = data['X']
@@ -309,8 +297,8 @@ def xytowcs(data_input_name:str,output_file:str, obj_file:str=None, file1:str=No
 
 
     #add columns to data table to eventually hold the calculated RA and Dec for each object
-    data.add_column(0.00000000000,name='Calc_RA')
-    data.add_column(0.00000000000,name='Calc_Dec')
+    data['Calc_RA'] = 0.
+    data['Calc_Dec'] = 0.
 
     #=====================================================================================================================================
 
@@ -345,7 +333,6 @@ def xytowcs(data_input_name:str,output_file:str, obj_file:str=None, file1:str=No
 
     data['Calc_RA']=RA
     data['Calc_Dec']=Dec
-    embed(header="367 of LRIS Mask Coords to WCS")
 
     #===================================================================================================================================
     #Now apply refraction correction to each of the points on the mask
@@ -406,7 +393,6 @@ def xytowcs(data_input_name:str,output_file:str, obj_file:str=None, file1:str=No
         hdu['ObjectCat'] = fits.BinTableHDU(ObjectCat, header=hdu['ObjectCat'].header)
         hdu['SlitObjMap'] = fits.BinTableHDU(SlitObjMap, header=hdu['SlitObjMap'].header)
     hdu.flush()
-
     #write out the data and results to the output file
     ascii.write(data,output_file+'.csv',format='csv',overwrite=True)
 
