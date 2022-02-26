@@ -8,7 +8,7 @@ from astroquery.gaia import Gaia
 from astroquery.mast import Catalogs
 from astropy.table import Table,Column
 
-def get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccenter,filename,maskbluID,adcuse):
+def get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccenter,filename,adcuse):
     #Set up arrays and columns to hold results
     rpd = np.pi/180.  #radians per degree
     ra_shifts=[]
