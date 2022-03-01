@@ -396,6 +396,17 @@ def xytowcs(data_input_name:str,output_file:str,obj_file:str=None, file1:str=Non
     w9f.create_ds9_file(data,ra_shifted_centers,dec_shifted_centers,rot_angle,catalog_obj_ra,catalog_obj_dec,output_file)
     #=====================================================================================================================================
     #update the fits file extension to include the calculated center positions of the slits
+
+    try:
+        hdu['DesiSlits'].data['slitRA'] = data['RA_Center'][::4]
+        hdu['DesiSlits'].data['slitDec'] = data['Dec_Center'][::4]
+    except:
+        desislits = Table(hdu['DesiSlits'].data)
+        cen_slits = Table([data['RA_Center'][::4],data['Dec_Center'][::4]],names = ['slitRA','slitDec'])
+        desislits = vstack([desislits,cen_slits])
+        hdu['DesiSlits'] = fits.BinTableHDU(desislits,header = hdu['DesiSlits'].header)
+
+    '''
     if data_ext == 'file3':
         desislits = Table(hdu['DesiSlits'].data)
         cen_slits = Table([data['RA_Center'][::4],data['Dec_Center'][::4]],names = ['slitRA','slitDec'])
@@ -404,6 +415,7 @@ def xytowcs(data_input_name:str,output_file:str,obj_file:str=None, file1:str=Non
     else:
         hdu['DesiSlits'].data['slitRA'] = data['RA_Center'][::4]
         hdu['DesiSlits'].data['slitDec'] = data['Dec_Center'][::4]
+    '''
 
     # If additional information is given, also populate the ObjectCat and
     # SlitObjMap tables
