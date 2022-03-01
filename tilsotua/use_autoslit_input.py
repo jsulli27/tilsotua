@@ -36,7 +36,7 @@ def gen_from_auto(autofile):
     coords = SkyCoord(ra0,dec0,frame='fk5',equinox='J'+epoch)
     ra0 = coords.ra.deg
     dec0 = coords.dec.deg
-    adc_use = content[41].split()[-2]
+    date = Time.strptime(content[2].split()[4]+' '+content[2].split()[3]+' '+content[2].split()[6],'%d %b %Y')
 
     #read in the X_mask,Y_mask slit positions
     def lines_that_equal(line_to_match, fp):
@@ -72,10 +72,7 @@ def gen_from_auto(autofile):
     mask_design['PA_PNT'] = angle
     mask_design['EQUINPNT'] = epoch
     mask_design['RADEPNT'] = 'fk5'
-    if adc_use == 'TRUE':
-        mask_design['DesDate'] = '2022-01-01'
-    else:
-        mask_design['DesDate'] = '2000-01-01'
+    mask_design['DesDate'] = date.to_value('iso',subfmt='date')
 
     new_file['MaskDesign'] = fits.BinTableHDU(mask_design,header = new_file['MaskDesign'].header)
 
