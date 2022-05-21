@@ -171,25 +171,31 @@ def xytowcs(data_input_name:str,output_file:str,obj_file:str=None, file1:str=Non
     the missing data filled in.
 
     Args:
-        data_input_name (str): Path to the input FITS file
-            from the mask design ingestion process. i.e. the
-            FITS file generated when AUTOSLIT .file3 ascii
-            files are fed mask submission webpage. THis can be the .file3 autoslit
-            output, in which case a FITS file for the mask will be automatically
-            generated before the rest of the calcuations are done.
+
+        data_input_name (str): Path to the input FITS file or autoslit-produced
+            ".file3" file. The FITS file would be produced during the mask design
+            ingestion process. i.e. the FITS file generated when AUTOSLIT .file3
+            ascii files are fed mask submission webpage.  If the input is a .file3,
+            a FITS file for the mask will be automatically generated.
+
         output_file (str): Name of the output file you'd
             like to generate. DO NOT INCLUDE FILE EXTENSIONS
             like .fits or .csv. e.g. "output_file".
+
         obj_file (str, optional): Path to the object catalog
             file that was used as an input to AUTOSLIT when generating
             the mask design files corresponding to data_input_name.
+
         file1 (str, optional): Path to the list of objects generated
             by AUTOSLIT. Has the extension of ".file1" by default.
+
         autofile (str, optional): Path to the autoslit output file
             (extension ".file3") to be used if the mask FITS file needs to
             be generated before anything else is done.
+
         mag_band (str, optional): Filter band in which AUTOSLIT
             was fed object magnitudes.
+
     Returns:
         None
     """
@@ -208,6 +214,7 @@ def xytowcs(data_input_name:str,output_file:str,obj_file:str=None, file1:str=Non
     mask_angle = 8.06 * rpd #angle of mask to the focal plane
     bend = 1.94 * rpd #angle of the bend in the mask
     x_center = 305. #point treated as the center on the ccd
+
     #  catalog_keyword = 'panstarrs'   #uncomment the desired catalog to be used
     catalog_keyword = 'gaia'
     #   catalog_keyword = 'custom'
@@ -219,7 +226,9 @@ def xytowcs(data_input_name:str,output_file:str,obj_file:str=None, file1:str=Non
     #================================================================================================================================
 
     #read in the data\
-    #copy the original file to a new file that will be the one to which the results are added
+    #copy the original file to a new file that will be the one to
+    # which the results are added
+        
     copyfile(data_input_name+'.fits', output_file+'.fits')
     #Open the copied file
     hdu=fits.open(output_file+'.fits',mode='update')
