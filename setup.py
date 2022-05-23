@@ -23,7 +23,7 @@ if os.path.exists('README.md'):
 setup_keywords['provides'] = [setup_keywords['name']]
 setup_keywords['requires'] = ['Python (>3.7.0)']
 setup_keywords['install_requires'] = ['astropy>=4.3.post1', 'matplotlib>=3.4.2','shapely',
-    'panstamps>=0.6.1', 'pytest-shutil>=1.7.0', 'numpy>=1.21.1','astroquery>=0.4.3','regions>=0.5','pyyaml>=5.3.1']
+    'panstamps>=0.6.1', 'pytest-shutil>=1.7.0', 'numpy>=1.21.1','astroquery>=0.4.3','regions>=0.5','pyyaml>=5.3.1','scipy>=1.7.3']
 setup_keywords['zip_safe'] = False
 setup_keywords['use_2to3'] = False
 setup_keywords['packages'] = find_packages()
