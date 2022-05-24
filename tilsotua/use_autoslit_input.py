@@ -48,17 +48,29 @@ def gen_from_auto(autofile):
                 matches.append(i)
         return(matches)
 
-    slit_start = lines_that_equal('newrow\n',content)
-    slit_pos = Table(names=['slitX1','slitY1','slitX2','slitY2','slitX3','slitY3','slitX4','slitY4'], dtype=(float,float,float,float,float,float,float,float))
+    slit_start_text = 'newrow\n'
+    slit_start = lines_that_equal(slit_start_text,content)
+    slit_pos = Table(names=['slitX1','slitY1','slitX2','slitY2',
+                            'slitX3','slitY3','slitX4','slitY4'],
+                            dtype=(float,float,float,float,float,float,float,float))
+
     for i in range(len(slit_start)-1):
         ind = slit_start[i]
 
-        X,Y = content[ind+1].split()[0],content[ind+1].split()[1]
-        X2,Y2 = content[ind+2].split()[0],content[ind+2].split()[1]
-        X3,Y3 = content[ind+3].split()[0],content[ind+3].split()[1]
-        X4,Y4 = content[ind+4].split()[0],content[ind+4].split()[1]
+        Z = []
+        j = ind+1
+        while content[j] != slit_start_text:
+            # This variable holds both X and Y positions:
+            Z.extend(content[j].split()[0:2])
+            j+=1
 
-        slit_pos.add_row([X,Y,X2,Y2,X3,Y3,X4,Y4])
+        # The last vertex is a repeat of the first. Remove it.
+        Z = Z[:len(Z)-2]
+
+        # Test that we have only 4 vertices. These are the standard slits.
+        if len(Z) == 8:
+            slit_pos.add_row(Z)
+
 
     #write the new fits file with the same structure as the UCO/Lick archive
     copyfile(dir_loc+'/blank_template.fits', autofile+'.fits')
