@@ -23,7 +23,7 @@ def gen_from_auto(autofile):
 
     dir_loc = str(pathlib.Path(__file__).parent.resolve())
 
-    #read in the file
+    #read in the autoslit output file
     auto_file = open(autofile+'.file3')
 
     content = auto_file.readlines()
@@ -85,6 +85,7 @@ def gen_from_auto(autofile):
     mask_design['EQUINPNT'] = epoch
     mask_design['RADEPNT'] = 'fk5'
     mask_design['DesDate'] = date.to_value('iso',subfmt='date')
+    mask_design['DesNslit'] = len(slit_start)
 
     new_file['MaskDesign'] = fits.BinTableHDU(mask_design,header = new_file['MaskDesign'].header)
 
