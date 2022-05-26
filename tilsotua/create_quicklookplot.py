@@ -46,6 +46,10 @@ def create_qlp(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,output
     ax6 = fig.add_subplot(gs[1, 2],projection=wcs)
     ax7 = fig.add_subplot(gs[2, 2],projection=wcs)
 
+
+    #adjust tick label size on full field panel
+    ax1.tick_params(axis='both', which='major', labelsize=8) 
+
     #For clarity of the plot, set the ticks of the zoom in panels on the alignment boxes to be invisible
     lon2 = ax2.coords[0]
     lat2 = ax2.coords[1]
@@ -139,6 +143,8 @@ def create_qlp(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,output
     pixels1b=utils.skycoord_to_pixel(temp1b, wcs=wcs, origin=0, mode='all')
     ax1.set_xlim([pixels1a[0],pixels1b[0]])
     ax1.set_ylim([pixels1a[1],pixels1b[1]])
+    ax1.set_xlabel(r'$\alpha [J2000]$',fontsize='large')
+    ax1.set_ylabel(r'$\delta [J2000]$',fontsize='large')
     ax1.invert_xaxis()
 #=================================================================================================================================
     #Find the first six boxes and plot the cutout panels in the quick look plot.

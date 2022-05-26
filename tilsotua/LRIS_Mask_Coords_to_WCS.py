@@ -5,7 +5,7 @@
 import sys
 import numpy as np
 from astropy.coordinates import SkyCoord, ICRS, Galactic, FK4, FK5
-from astropy.table import Table,Column,join
+from astropy.table import Table,Column,join,vstack
 from astropy.io import ascii,fits
 from astropy.time import Time
 import astropy.units as u
@@ -16,6 +16,7 @@ import tilsotua.astrometrycorrection as ac
 import tilsotua.create_quicklookplot as qlp
 import tilsotua.write_ds9_file as w9f
 import tilsotua.precessionroutine as pr
+import tilsotua.use_autoslit_input as autoin
 
 from shutil import copyfile
 
@@ -97,7 +98,7 @@ def generate_object_cat(obj_file:str, file1:str, xy_map:Table,
     delta2 = xy_map['Calc_Dec'][1::4]
 
     alpha3 = xy_map['Calc_RA'][2::4]
-    delta3 = xy_map['Calc_Dec'][2::4] 
+    delta3 = xy_map['Calc_Dec'][2::4]
 
     alpha4 = xy_map['Calc_RA'][3::4]
     delta4 = xy_map['Calc_Dec'][3::4]
@@ -160,7 +161,7 @@ def refraction_correction(ra0:float, dec0:float):
     return DA1, DD1
 
 
-def xytowcs(data_input_name:str,output_file:str,obj_file:str=None, file1:str=None, mag_band:str='I')->None:
+def xytowcs(data_input_name:str,output_file:str,obj_file:str=None, file1:str=None,mag_band:str='I')->None:
     """
     Function to convert slit coordinates in the mask frame
     to equatorial coordinates (RA,Dec). Generates a CSV
@@ -170,23 +171,41 @@ def xytowcs(data_input_name:str,output_file:str,obj_file:str=None, file1:str=Non
     the missing data filled in.
 
     Args:
-        data_input_name (str): Path to the input FITS file
-            from the mask design ingestion process. i.e. the
-            FITS file generated when AUTOSLIT .file3 ascii
-            files are fed mask submission webpage.
+
+        data_input_name (str): Path to the input FITS file or autoslit-produced
+            ".file3" file. The FITS file would be produced during the mask design
+            ingestion process. i.e. the FITS file generated when AUTOSLIT .file3
+            ascii files are fed mask submission webpage.  If the input is a .file3,
+            a FITS file for the mask will be automatically generated.
+
         output_file (str): Name of the output file you'd
             like to generate. DO NOT INCLUDE FILE EXTENSIONS
             like .fits or .csv. e.g. "output_file".
+
         obj_file (str, optional): Path to the object catalog
             file that was used as an input to AUTOSLIT when generating
             the mask design files corresponding to data_input_name.
+
         file1 (str, optional): Path to the list of objects generated
             by AUTOSLIT. Has the extension of ".file1" by default.
+
+        autofile (str, optional): Path to the autoslit output file
+            (extension ".file3") to be used if the mask FITS file needs to
+            be generated before anything else is done.
+
         mag_band (str, optional): Filter band in which AUTOSLIT
             was fed object magnitudes.
+
     Returns:
         None
     """
+
+    #If the data input file is a ".file3" autoslit output file, generate the mask
+    #FITS file first
+    data_input_name,data_ext = data_input_name.split('.')[0],data_input_name.split('.')[1]
+    #data_ext = data_input_name.split('.')[1]
+    if data_ext== 'file3':
+        autoin.gen_from_auto(data_input_name)
 
     #set up some constants
     rpd = np.pi/180. #radians per degree
@@ -195,6 +214,7 @@ def xytowcs(data_input_name:str,output_file:str,obj_file:str=None, file1:str=Non
     mask_angle = 8.06 * rpd #angle of mask to the focal plane
     bend = 1.94 * rpd #angle of the bend in the mask
     x_center = 305. #point treated as the center on the ccd
+
     #  catalog_keyword = 'panstarrs'   #uncomment the desired catalog to be used
     catalog_keyword = 'gaia'
     #   catalog_keyword = 'custom'
@@ -206,11 +226,13 @@ def xytowcs(data_input_name:str,output_file:str,obj_file:str=None, file1:str=Non
     #================================================================================================================================
 
     #read in the data\
-    #copy the original file to a new file that will be the one to which the results are added
-    copyfile(data_input_name, output_file+'.fits')
+    #copy the original file to a new file that will be the one to
+    # which the results are added
+        
+    copyfile(data_input_name+'.fits', output_file+'.fits')
     #Open the copied file
     hdu=fits.open(output_file+'.fits',mode='update')
-    maskbluID = str(hdu['MaskBlu'].data['BluID'][0])
+    #maskbluID = str(hdu['MaskBlu'].data['BluID'][0])
 
     #obtain the rotation angle of the instrument
     mask_design = hdu['MaskDesign'].data[0]
@@ -346,7 +368,7 @@ def xytowcs(data_input_name:str,output_file:str,obj_file:str=None, file1:str=Non
     #    val = np.argmin(distance)
     #    data['Calc_RA'][i]= data['Calc_RA'][i]-refraction_table['RA Offset'][val]
     #    data['Calc_Dec'][i]= data['Calc_Dec'][i]-refraction_table['Dec Offset'][val]
-#   
+#
     #apply correction for each point:
     # First cross match the two catalogs. i.e. find closest object in refraction table for entry in data
     refract_coords = SkyCoord(refraction_table['Aparent RA'], refraction_table['Aparent Dec'], unit="deg")
@@ -372,7 +394,7 @@ def xytowcs(data_input_name:str,output_file:str,obj_file:str=None, file1:str=Non
     #====================================================================================================================================
     #calculate the average offset for the dataset and refraction correction
     print('----------------Calculating Mask Shift-----------------')
-    data,x_centers,y_centers,ra_shifted_centers,dec_shifted_centers,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec = fs.get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccenter,catalog_file,maskbluID,adcuse)
+    data,x_centers,y_centers,ra_shifted_centers,dec_shifted_centers,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec = fs.get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccenter,catalog_file,adcuse)
     #create the error plot
     print('-----------------Creating Quick Look Plot---------------')
     try:
@@ -383,8 +405,26 @@ def xytowcs(data_input_name:str,output_file:str,obj_file:str=None, file1:str=Non
     w9f.create_ds9_file(data,ra_shifted_centers,dec_shifted_centers,rot_angle,catalog_obj_ra,catalog_obj_dec,output_file)
     #=====================================================================================================================================
     #update the fits file extension to include the calculated center positions of the slits
-    hdu['DesiSlits'].data['slitRA'] = data['RA_Center'][::4]
-    hdu['DesiSlits'].data['slitDec'] = data['Dec_Center'][::4]
+
+    try:
+        hdu['DesiSlits'].data['slitRA'] = data['RA_Center'][::4]
+        hdu['DesiSlits'].data['slitDec'] = data['Dec_Center'][::4]
+    except:
+        desislits = Table(hdu['DesiSlits'].data)
+        cen_slits = Table([data['RA_Center'][::4],data['Dec_Center'][::4]],names = ['slitRA','slitDec'])
+        desislits = vstack([desislits,cen_slits])
+        hdu['DesiSlits'] = fits.BinTableHDU(desislits,header = hdu['DesiSlits'].header)
+
+    '''
+    if data_ext == 'file3':
+        desislits = Table(hdu['DesiSlits'].data)
+        cen_slits = Table([data['RA_Center'][::4],data['Dec_Center'][::4]],names = ['slitRA','slitDec'])
+        desislits = vstack([desislits,cen_slits])
+        hdu['DesiSlits'] = fits.BinTableHDU(desislits,header = hdu['DesiSlits'].header)
+    else:
+        hdu['DesiSlits'].data['slitRA'] = data['RA_Center'][::4]
+        hdu['DesiSlits'].data['slitDec'] = data['Dec_Center'][::4]
+    '''
 
     # If additional information is given, also populate the ObjectCat and
     # SlitObjMap tables
