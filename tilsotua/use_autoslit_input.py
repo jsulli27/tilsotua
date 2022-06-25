@@ -6,6 +6,7 @@ from astropy.io import fits
 from astropy.coordinates import SkyCoord
 from astropy.time import Time
 import pathlib
+import numpy as np
 
 def gen_from_auto(autofile):
     """
@@ -89,9 +90,10 @@ def gen_from_auto(autofile):
 
     new_file['MaskDesign'] = fits.BinTableHDU(mask_design,header = new_file['MaskDesign'].header)
 
-    #add the slit positions
+    #add the slit positions and unique dSlitId values in the bluslits table
     bluslits = Table(new_file['BluSlits'].data)
     bluslits = vstack([bluslits,slit_pos])
+    bluslits['dSlitId'] = np.arange(len(bluslits))
     new_file['BluSlits'] = fits.BinTableHDU(bluslits,header = new_file['BluSlits'].header)
 
     new_file.flush()
