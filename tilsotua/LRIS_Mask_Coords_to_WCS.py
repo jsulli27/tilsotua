@@ -238,7 +238,7 @@ def xytowcs(data_input_name:str,output_file:str,
     #read in the data\
     #copy the original file to a new file that will be the one to
     # which the results are added
-        
+
     copyfile(data_input_name+'.fits', output_file+'.fits')
     #Open the copied file
     hdu=fits.open(output_file+'.fits',mode='update')
@@ -423,6 +423,7 @@ def xytowcs(data_input_name:str,output_file:str,
         desislits = Table(hdu['DesiSlits'].data)
         cen_slits = Table([data['RA_Center'][::4],data['Dec_Center'][::4]],names = ['slitRA','slitDec'])
         desislits = vstack([desislits,cen_slits])
+        desislits['dSlitId'] = np.arange(len(desislits))
         hdu['DesiSlits'] = fits.BinTableHDU(desislits,header = hdu['DesiSlits'].header)
 
     '''
