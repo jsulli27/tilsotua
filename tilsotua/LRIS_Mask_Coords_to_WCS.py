@@ -23,7 +23,7 @@ from shutil import copyfile
 def generate_object_cat(obj_file:str, file1:str, xy_map:Table,
                         mag_band:str='I')->Table:
     """
-    Fill in the ObjectCat and SlitObjMap tables in the
+    Fill in the ObjectCat, SlitObjMap and DesiSlit tables in the
     output fits file.
     Args:
     obj_file (str): Path to object file fed to AUTOSLIT
@@ -38,6 +38,9 @@ def generate_object_cat(obj_file:str, file1:str, xy_map:Table,
     Returns:
     ObjectCat (Table): Object catalog.
     SlitObjMap (Table): Table mapping slits to catalog objects.
+    DesiSlits (Table): Slit geometry parameter table. Does not
+        contain slitRA/slitDec columns. Those are filled outside
+        this function.
     """
     assert type(mag_band) == str, "Invalid band for magnitude"
 
@@ -105,6 +108,8 @@ def generate_object_cat(obj_file:str, file1:str, xy_map:Table,
 
     coord_14 = SkyCoord((alpha1+alpha4)/2, (delta1+delta4)/2, unit="deg")
     coord_23 = SkyCoord((alpha2+alpha3)/2, (delta2+delta3)/2, unit="deg")
+    coord_12 = SkyCoord((alpha1+alpha2)/2, (delta1+delta2)/2, unit="deg")
+    coord_34 = SkyCoord((alpha4+alpha3)/2, (delta4+delta3)/2, unit="deg")
 
     objcoord = SkyCoord(obj_ra, obj_dec, unit="deg")
     bot_dist = objcoord.separation(coord_23)
@@ -113,7 +118,23 @@ def generate_object_cat(obj_file:str, file1:str, xy_map:Table,
     SlitObjMap['TopDist'] = top_dist.to('arcsec').value
     SlitObjMap['BotDist'] = bot_dist.to('arcsec').value
 
-    return ObjectCat, SlitObjMap
+    slit_len = coord_14.separation(coord_23).to('arcsec').value
+    slit_LPA = coord_14.position_angle(coord_23).to('deg').value
+
+    slit_wid = coord_12.separation(coord_34).to('arcsec').value
+    slit_WPA = coord_34.position_angle(coord_12).to('deg').value
+
+    DesiSlits = Table()
+    DesiSlits['dSlitId'] = SlitObjMap['dSlitId']
+    DesiSlits['DesId'] = SlitObjMap['DesId']
+    DesiSlits['SlitName'] = ['slit'+str(idx) for idx in range(len(DesiSlits))]
+    DesiSlits['slitTyp'] = [entry[0] for entry in ObjectCat['ObjectClass']]
+    DesiSlits['slitLen'] = slit_len
+    DesiSlits['slitLPA'] = slit_LPA
+    DesiSlits['slitWid'] = slit_wid
+    DesiSlits['slitWPA'] = slit_WPA
+
+    return ObjectCat, SlitObjMap, DesiSlits
 
 def refraction_correction(ra0:float, dec0:float):
     """
@@ -430,9 +451,11 @@ def xytowcs(data_input_name:str,output_file:str,obj_file:str=None, file1:str=Non
     # If additional information is given, also populate the ObjectCat and
     # SlitObjMap tables
     if obj_file and file1:
-        ObjectCat, SlitObjMap = generate_object_cat(obj_file, file1, data, mag_band)
+        ObjectCat, SlitObjMap, DesiSlits_part = generate_object_cat(obj_file, file1, data, mag_band)
         hdu['ObjectCat'] = fits.BinTableHDU(ObjectCat, header=hdu['ObjectCat'].header)
         hdu['SlitObjMap'] = fits.BinTableHDU(SlitObjMap, header=hdu['SlitObjMap'].header)
+        for col in DesiSlits_part.colnames:
+            hdu['DesiSlits'].data[col] = DesiSlits_part[col]
     hdu.flush()
     #write out the data and results to the output file
     ascii.write(data,output_file+'.csv',format='csv',overwrite=True)
