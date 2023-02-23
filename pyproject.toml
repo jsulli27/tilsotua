@@ -6,7 +6,7 @@ authors = ["Jessica Sullivan <jsulli27@nd.edu>"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
-astropy = "4.3.post1"
+astropy = "4.3.1"
 matplotlib = "3.4.2"
 panstamps = "0.6.1"
 pytest-shutil = "1.7.0"
@@ -14,7 +14,7 @@ numpy = "1.21.1"
 astroquery = "0.4.3"
 regions = "0.5"
 pyyaml = "5.3.1"
-shapely = ""
+shapely = "*"
 scipy = "1.7.3"
 
 [tool.poetry.dev-dependencies]
