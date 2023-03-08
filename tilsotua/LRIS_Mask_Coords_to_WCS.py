@@ -228,7 +228,7 @@ def xytowcs(data_input_name:str,output_file:str,obj_file:str=None, file1:str=Non
     #read in the data\
     #copy the original file to a new file that will be the one to
     # which the results are added
-        
+
     copyfile(data_input_name+'.fits', output_file+'.fits')
     #Open the copied file
     hdu=fits.open(output_file+'.fits',mode='update')
@@ -402,7 +402,7 @@ def xytowcs(data_input_name:str,output_file:str,obj_file:str=None, file1:str=Non
     except:
         print('ISSUE WITH QUICK LOOK PLOT...CHECK RESULTS')
 
-    w9f.create_ds9_file(data,ra_shifted_centers,dec_shifted_centers,rot_angle,catalog_obj_ra,catalog_obj_dec,output_file)
+    w9f.create_ds9_file(data,ra_shifted_centers,dec_shifted_centers,rot_angle,scale,ref_system,catalog_obj_ra,catalog_obj_dec,output_file)
     #=====================================================================================================================================
     #update the fits file extension to include the calculated center positions of the slits
 
