@@ -19,6 +19,7 @@ import tilsotua.precessionroutine as pr
 import tilsotua.use_autoslit_input as autoin
 
 from shutil import copyfile
+import warnings
 
 def generate_object_cat(obj_file:str, file1:str, xy_map:Table,
                         mag_band:str='I')->Table:
@@ -42,14 +43,20 @@ def generate_object_cat(obj_file:str, file1:str, xy_map:Table,
     assert type(mag_band) == str, "Invalid band for magnitude"
 
     # Read in tables
-    objcols = ['Name', 'prior', 'Mag', '']
+    #objcols = ['Name', 'prior', 'Mag', '']
     objects = Table.read(obj_file, format="ascii")
     objects.rename_column('col1', 'Name')
     file1_tab = Table.read(file1, format="ascii.commented_header", header_start=62)
     file1_tab['index'] = np.arange(len(file1_tab))
 
+    unique_names = np.unique(file1_tab['Name'])
+    assert len(unique_names) == len(file1_tab), "There are non-unique object names in file1. Cannot assign object names from this file. Aborting."
+
+    unique_objs = np.unique(objects['Name'])
+    assert len(unique_objs) == len(objects), "There are non-unique object names in the obj file. Cannot uniquely match entries in file1. Aborting."
+
     # Join by object name
-    joined_tab = join(file1_tab, objects, keys='Name')
+    joined_tab = join(file1_tab, objects, keys='Name',join_type='inner')
     joined_tab.sort('index') # Preserve the order in file1_tab
     # Get RA and Dec
 
@@ -161,7 +168,9 @@ def refraction_correction(ra0:float, dec0:float):
     return DA1, DD1
 
 
-def xytowcs(data_input_name:str,output_file:str,obj_file:str=None, file1:str=None,mag_band:str='I')->None:
+def xytowcs(data_input_name:str,output_file:str,
+            obj_file:str=None, file1:str=None,
+            mag_band:str='I')->None:
     """
     Function to convert slit coordinates in the mask frame
     to equatorial coordinates (RA,Dec). Generates a CSV
@@ -187,7 +196,8 @@ def xytowcs(data_input_name:str,output_file:str,obj_file:str=None, file1:str=Non
             the mask design files corresponding to data_input_name.
 
         file1 (str, optional): Path to the list of objects generated
-            by AUTOSLIT. Has the extension of ".file1" by default.
+            by AUTOSLIT. Has the extension of ".file1" by default. OBJ_FILE
+            AND FILE1 ARE NECESSARY TO POPULATE OBJECT NAMES IN THE OUTPUT.
 
         autofile (str, optional): Path to the autoslit output file
             (extension ".file3") to be used if the mask FITS file needs to
@@ -432,7 +442,11 @@ def xytowcs(data_input_name:str,output_file:str,obj_file:str=None, file1:str=Non
         ObjectCat, SlitObjMap = generate_object_cat(obj_file, file1, data, mag_band)
         hdu['ObjectCat'] = fits.BinTableHDU(ObjectCat, header=hdu['ObjectCat'].header)
         hdu['SlitObjMap'] = fits.BinTableHDU(SlitObjMap, header=hdu['SlitObjMap'].header)
+    else:
+        warnings.warn("ObjectCat and SlitObjMap tables are not populated. Your output will not contain object names.",
+                      category=UserWarning)
     hdu.flush()
+    
     #write out the data and results to the output file
     ascii.write(data,output_file+'.csv',format='csv',overwrite=True)
 
