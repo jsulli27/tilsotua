@@ -1,9 +1,0 @@
-astropy>=4.3.post1
-matplotlib>=3.4.2
-shapely
-panstamps>=0.6.1
-pytest-shutil>=1.7.0
-numpy>=1.21.1
-astroquery>=0.4.3
-regions>=0.5
-pyyaml>=5.3.1
