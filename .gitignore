@@ -4,3 +4,4 @@ dist/
 __pycache__/
 *.eggs
 *.egg-info
+settings.json

@@ -8,6 +8,10 @@ from astroquery.gaia import Gaia
 from astroquery.mast import Catalogs
 from astropy.table import Table,Column
 
+#for testing the ransac package
+import pyransac
+from pyransac import line2d
+
 def get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccenter,filename,adcuse):
     #Set up arrays and columns to hold results
     rpd = np.pi/180.  #radians per degree
@@ -97,7 +101,7 @@ def get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccent
 
             if catalog_keyword == 'panstarrs':
                 obj = Catalogs.query_region(coord, radius=15*u.arcsec, catalog='Panstarrs', data_release='dr2')
-               # mag_cutoff = (obj['gMeanKronMag']>18.)
+                # mag_cutoff = (obj['gMeanKronMag']>18.)
                 #obj = obj[mag_cutoff]
 
                 objects_ra.append(obj['raMean'])
@@ -152,7 +156,8 @@ def get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccent
 #being matched to the boxes (ie. "good" shifts). This is done by determining whether the shift array contains both "small" and "large" shift values (as
 #defined by cutoff values). If this is the case, the outliers are found by removing the small/large values by determining which the shift array has more
 #of and removing the small/large values that the array has fewer of.
-
+    '''
+#removing this shift algorithm from this branch to test the RANSAC algorithm
     good_ra_shifts=[]
     good_dec_shifts=[]
     removed = 0
@@ -187,6 +192,52 @@ def get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccent
 
     print(small,'small shifts')
     print(removed,'elements removed from shift arrays')
+    '''
+    
+    #set up dataset for ransac algorithm
+    #go through in RA and Dec direction
+    X = ra_centers
+    Y = ra_shifts#np.array([a**2+b**2 for a,b in zip(ra_shifts,dec_shifts)])
+    datapoints = [line2d.Point2D(a, b) for a,b in zip(X,Y)]#inliers + outliers
+
+    params = pyransac.RansacParams(samples=2,
+                               iterations=1000,
+                               confidence=0.999,
+                               threshold=0.0001)
+    model = line2d.Line2D(slope=0)
+    good_shifts = pyransac.find_inliers(points=datapoints,
+                                    model=model,
+                                    params=params)
+    temp_ra_shifts=[]
+    for i in range(len(good_shifts)):
+        temp_ra_shifts.append(good_shifts[i].y)
+    temp_dec_shifts= []
+    temp_ra_centers = []
+    for i in range(len(dec_shifts)):
+        if ra_shifts[i] in temp_ra_shifts:
+            temp_dec_shifts.append(dec_shifts[i])
+    for i in range(len(ra_centers)):
+        if ra_shifts[i] in temp_ra_shifts:
+            temp_ra_centers.append(ra_centers[i])
+    #run ransac again on the dec shifts
+    X = temp_ra_centers
+    Y = temp_dec_shifts#np.array([a**2+b**2 for a,b in zip(ra_shifts,dec_shifts)])
+    datapoints = [line2d.Point2D(a, b) for a,b in zip(X,Y)]#inliers + outliers
+
+    good_shifts = pyransac.find_inliers(points=datapoints,
+                                    model=model,
+                                    params=params)
+    good_dec_shifts=[]
+    for i in range(len(good_shifts)):
+        good_dec_shifts.append(good_shifts[i].y)
+    good_ra_shifts= []
+    for i in range(len(temp_ra_shifts)):
+        if temp_dec_shifts[i] in good_dec_shifts:
+            good_ra_shifts.append(temp_ra_shifts[i])
+    print(good_ra_shifts)
+
+    print(good_dec_shifts)
+    
 #=================================================================================================================================
 #Calculate the final shifts to apply to the slit positions by averaging the individual "good" shifts from the boxes.
     dec_shift_final = np.average(good_dec_shifts)
