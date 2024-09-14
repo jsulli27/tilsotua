@@ -26,8 +26,8 @@ def refraction_calc(data,racenter,deccenter):
     rpam = rpd/60. #radiams per arcmin
     H = 0 * rph  #chosen hour angle
     delta =  10/60
-    ra_range = np.linspace(racenter*dpr-delta,racenter*dpr+delta, num = 1500)
-    dec_range = np.linspace(deccenter*dpr-delta,deccenter*dpr+delta, num = 1500)
+    ra_range = np.linspace(racenter*dpr-delta,racenter*dpr+delta, num = 100)
+    dec_range = np.linspace(deccenter*dpr-delta,deccenter*dpr+delta, num = 100)
     ra_grid,dec_grid = np.meshgrid(ra_range, dec_range, indexing='ij',sparse=True)
     #calculate correction values
     HA = H + racenter-ra_range*rpd
@@ -56,13 +56,10 @@ def refraction_calc(data,racenter,deccenter):
 
 
     #calculate parallactic angle
-        #if sinz != 0:
-        sinq = np.cos(lat)*np.sin(HA)/sinz
-        cosq = (np.cos(np.pi/2-lat) - cosz *np.cos(np.pi/2-dec))/(sinz*np.sin(np.pi/2-dec))
-
-#        else:
-            #sinq = 0
-            #cosq = 0
+        sinq = np.empty(len(sinz))
+        sinz_nonzero = (sinz!=0)
+        sinq[sinz_nonzero] = np.cos(lat)*np.sin(HA)/sinz
+        sinq[~sinz_nonzero] = 0
 
     #calculate refractive index
         wavers = 1/(wave**2)
@@ -73,7 +70,7 @@ def refraction_calc(data,racenter,deccenter):
     #calculate temp and pressure correction
         tcorr = 1+0.003661*temp
         num = 720.88*tcorr
-        N = N * ((pres * (1.+((1.049-0.0157*temp) * 10**-6 * pres))) / num)#N*((pres*(1.+(1.049-((0.0157*temp)*(1*10**-6)*pres))))/num)
+        N = N * ((pres * (1.+((1.049-0.0157*temp) * 10**-6 * pres))) / num)
 
     #calculate refraction
         R = N * 206265 * tanz
@@ -108,13 +105,11 @@ def refraction_calc(data,racenter,deccenter):
 
 
             #calculate parallactic angle
-                #if sinz != 0:
-                sinq = np.cos(lat)*np.sin(HA[j])/sinz
-                cosq = (np.cos(np.pi/2-lat) - cosz *np.cos(np.pi/2-dec[i]))/(sinz*np.sin(np.pi/2-dec[i]))
+                if sinz != 0:
+                    sinq = np.cos(lat)*np.sin(HA[j])/sinz
 
-        #        else:
-                    #sinq = 0
-                    #cosq = 0
+                else:
+                    sinq = 0
 
             #calculate refractive index
                 wavers = 1/(wave**2)
@@ -125,7 +120,7 @@ def refraction_calc(data,racenter,deccenter):
             #calculate temp and pressure correction
                 tcorr = 1+0.003661*temp
                 num = 720.88*tcorr
-                N = N * ((pres * (1.+((1.049-0.0157*temp) * 10**-6 * pres))) / num)#N*((pres*(1.+(1.049-((0.0157*temp)*(1*10**-6)*pres))))/num)
+                N = N * ((pres * (1.+((1.049-0.0157*temp) * 10**-6 * pres))) / num)
 
             #calculate refraction
                 R = N * 206265 * tanz
@@ -136,7 +131,7 @@ def refraction_calc(data,racenter,deccenter):
                 corrections[i,j] = DA*dpr
 
         return(np.swapaxes(corrections,0,1))
-    
+
     #======================================================================================
     def dec_rad_refraction(ra,dec,HA):
 
@@ -155,18 +150,14 @@ def refraction_calc(data,racenter,deccenter):
         sina = np.sin(lat)*np.sin(dec)+np.cos(lat)*np.cos(dec)*np.cos(HA)
         cosz = sina
         sinz = np.sqrt(1.-sina**2)
-        #print(sinz)
         tanz = sinz/cosz
 
 
     #calculate parallactic angle
-        #if sinz != 0:
-        sinq = np.cos(lat)*np.sin(HA)/sinz
-        cosq = (np.cos(np.pi/2-lat) - cosz *np.cos(np.pi/2-dec))/(sinz*np.sin(np.pi/2-dec))
-
-        #else:
-            #sinq = 0
-            #cosq = 0
+        cosq = np.empty(len(sinz))
+        sinz_nonzero = (sinz!=0)
+        cosq[sinz_nonzero] = (np.cos(np.pi/2-lat) - cosz *np.cos(np.pi/2-dec))/(sinz*np.sin(np.pi/2-dec))
+        cosq[~sinz_nonzero] = 0
 
     #calculate refractive index
         wavers = 1/(wave**2)
@@ -177,16 +168,15 @@ def refraction_calc(data,racenter,deccenter):
     #calculate temp and pressure correction
         tcorr = 1+0.003661*temp
         num = 720.88*tcorr
-        N = N * ((pres * (1.+((1.049-0.0157*temp) * 10**-6 * pres))) / num)#N*((pres*(1.+(1.049-((0.0157*temp)*(1*10**-6)*pres))))/num)
+        N = N * ((pres * (1.+((1.049-0.0157*temp) * 10**-6 * pres))) / num)
 
     #calculate refraction
         R = N * 206265 * tanz
 
     #calculate correction to RA and Dec
-        DA = R * sinq * rpas/np.cos(dec)
         DD = R * cosq * rpas
         return(DD*dpr)
-    
+
     def dec_rad_refraction_grid(ra,dec,HA):
 
         rph = np.pi*15./180 #radians per hour
@@ -211,13 +201,11 @@ def refraction_calc(data,racenter,deccenter):
 
 
             #calculate parallactic angle
-                #if sinz != 0:
-                sinq = np.cos(lat)*np.sin(HA[j])/sinz
-                cosq = (np.cos(np.pi/2-lat) - cosz *np.cos(np.pi/2-dec[i]))/(sinz*np.sin(np.pi/2-dec[i]))
+                if sinz != 0:
+                    cosq = (np.cos(np.pi/2-lat) - cosz *np.cos(np.pi/2-dec[i]))/(sinz*np.sin(np.pi/2-dec[i]))
 
-                #else:
-                    #sinq = 0
-                    #cosq = 0
+                else:
+                    cosq = 0
 
             #calculate refractive index
                 wavers = 1/(wave**2)
@@ -228,17 +216,16 @@ def refraction_calc(data,racenter,deccenter):
             #calculate temp and pressure correction
                 tcorr = 1+0.003661*temp
                 num = 720.88*tcorr
-                N = N * ((pres * (1.+((1.049-0.0157*temp) * 10**-6 * pres))) / num)#N*((pres*(1.+(1.049-((0.0157*temp)*(1*10**-6)*pres))))/num)
+                N = N * ((pres * (1.+((1.049-0.0157*temp) * 10**-6 * pres))) / num)
 
             #calculate refraction
                 R = N * 206265 * tanz
 
             #calculate correction to RA and Dec
-                DA = R * sinq * rpas/np.cos(dec[i])
                 DD = R * cosq * rpas
                 corrections[i,j] = DD*dpr
         return(np.swapaxes(corrections,0,1))
-    
+
     #======================================================================================
     #Apply the correction to the slit positions in the data array
     #Set up the correction values on a grid of already corrected values for comparison
