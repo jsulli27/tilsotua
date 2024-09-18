@@ -4,8 +4,6 @@
 import numpy as np
 from astropy.table import Table,Column
 from scipy.interpolate import RegularGridInterpolator
-from matplotlib import pyplot as plt
-import matplotlib
 def astrometry_calc(data,ra_center,dec_center):
 
     #create a grid of values to create the points for which the correction will be calculated
@@ -114,8 +112,8 @@ def astrometry_calc(data,ra_center,dec_center):
     ref_data = x_astrometry_correction_calc_grid(x_grid, y_grid)
     y_ref_data = y_astrometry_correction_calc_grid(x_grid,y_grid)
     #call the actual interpolation function
-    interp = RegularGridInterpolator((corr_x_range, corr_y_range), ref_data,method='cubic')
-    yinterp = RegularGridInterpolator((corr_x_range,corr_y_range), y_ref_data,method='cubic')
+    interp = RegularGridInterpolator((corr_x_range, corr_y_range), ref_data,method='linear')
+    yinterp = RegularGridInterpolator((corr_x_range,corr_y_range), y_ref_data,method='linear')
 
 #=================================================================================================================================
     #apply the correction to the X,Y slit positions

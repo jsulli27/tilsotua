@@ -9,8 +9,6 @@ from astropy.table import Table,Column,join,vstack
 from astropy.io import ascii,fits
 from astropy.time import Time
 import astropy.units as u
-from scipy.interpolate import RegularGridInterpolator
-from matplotlib import pyplot as plt
 
 import tilsotua.find_shifts as fs
 import tilsotua.refractioncorrection as ref
@@ -369,7 +367,7 @@ def xytowcs(data_input_name:str,output_file:str,
     #have to correct the center coordiantes before inverse gnomic projectoin
     ra0 = ra0*rpd - (x0*np.cos(theta)*rpas/np.cos(dec0*rpd))
     dec0 = dec0*rpd - x0*np.sin(theta)*rpas
-    
+
     #calculate the final ra and dec using the inverse gnomic projection
     ra_t = eta*np.sin(c)
     ra_b = (rho*np.cos(dec0)*np.cos(c))-(nu*np.sin(dec0)*np.sin(c))
