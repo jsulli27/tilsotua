@@ -233,8 +233,8 @@ def refraction_calc(data,racenter,deccenter):
     ref_data = ra_rad_refraction_grid(ra_grid, dec_grid,HA)
     dec_ref_data = dec_rad_refraction_grid(ra_grid,dec_grid,HA)
     #call the actual interpolation function
-    interp = RegularGridInterpolator((corr_ra_range, corr_dec_range), ref_data,method='nearest')
-    decinterp = RegularGridInterpolator((corr_ra_range,corr_dec_range), dec_ref_data,method='nearest')
+    interp = RegularGridInterpolator((corr_ra_range, corr_dec_range), ref_data,method='linear')
+    decinterp = RegularGridInterpolator((corr_ra_range,corr_dec_range), dec_ref_data,method='linear')
     for i in range(len(data['Calc_RA'])):
         data['Calc_RA'][i] -= interp([data['Calc_RA'][i],data['Calc_Dec'][i]])
         data['Calc_Dec'][i] -= decinterp([data['Calc_RA'][i],data['Calc_Dec'][i]])
