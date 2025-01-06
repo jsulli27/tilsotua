@@ -63,6 +63,8 @@ def generate_object_cat(obj_file:str, file1:str, xy_map:Table,
     joined_tab.sort('index') # Preserve the order in file1_tab
     # Get RA and Dec
 
+    assert len(joined_tab) == len(file1_tab), "Some objects in file1 do not have corresponding entries in the object file. Are the object names truncated in file1?"
+
     obj_ra = joined_tab['col4']+joined_tab['col5']/60+joined_tab['col6']/3600 # hours
     obj_ra *= 15 # Convert to degrees.
     obj_dec = joined_tab['col7']+(joined_tab['col8']/60+joined_tab['col9']/3600)*np.sign(joined_tab['col7']) # degs
@@ -314,6 +316,7 @@ def xytowcs(data_input_name:str,output_file:str,
     #read in the slit data
     print('------------Reading in Slit Data-----------------')
     bluslits = hdu['BluSlits'].data
+    bluslits['dSlitId'] = np.arange(len(bluslits))
 
     data = Table()
     data['X'] = np.array([bluslits['slitX1'], bluslits['slitX2'],
@@ -446,6 +449,7 @@ def xytowcs(data_input_name:str,output_file:str,
         desislits = vstack([desislits,cen_slits])
         desislits['dSlitId'] = np.arange(len(desislits))
         hdu['DesiSlits'] = fits.BinTableHDU(desislits,header = hdu['DesiSlits'].header)
+    assert len(hdu['DesiSlits'].data) == len(bluslits), "Mismatch in number of slits in bluslits and DesiSlits. Aborting."
 
     '''
     if data_ext == 'file3':
