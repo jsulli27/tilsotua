@@ -2,7 +2,10 @@
 
 import numpy as np
 from astropy.table import Table,Column
+from matplotlib import pyplot as plt
 from scipy.interpolate import RegularGridInterpolator
+from astropy.io import ascii,fits
+
 def refraction_calc(data,racenter,deccenter):
     """
     Remove the effect of the refraction correction from RA,Dec slit
@@ -24,9 +27,15 @@ def refraction_calc(data,racenter,deccenter):
     dpr = 1/rpd #radians per degree
     rpam = rpd/60. #radiams per arcmin
     H = 0 * rph  #chosen hour angle
-    delta =  10/60
-    ra_range = np.linspace(racenter*dpr-delta,racenter*dpr+delta, num = 100)
-    dec_range = np.linspace(deccenter*dpr-delta,deccenter*dpr+delta, num = 100)
+    delta =  12.8/60
+    ra_range = np.linspace(racenter*dpr-delta,racenter*dpr+delta, num = 300)
+    dec_range = np.linspace(deccenter*dpr-delta,deccenter*dpr+delta, num = 300)
+    ra_grid = np.zeros(shape=(len(ra_range),len(dec_range)))
+    dec_grid = np.zeros(shape=(len(ra_range),len(dec_range)))
+    for i in range(len(ra_grid)):
+        for j in range(len(dec_grid)):
+            ra_grid[i:j]=ra_range[i]
+            dec_grid[i:j]=dec_range[j]
     ra_grid,dec_grid = np.meshgrid(ra_range, dec_range, indexing='ij',sparse=True)
     #calculate correction values
     HA = H + racenter-ra_range*rpd
@@ -55,10 +64,13 @@ def refraction_calc(data,racenter,deccenter):
 
 
     #calculate parallactic angle
-        sinq = np.empty(len(sinz))
-        sinz_nonzero = (sinz!=0)
-        sinq[sinz_nonzero] = np.cos(lat)*np.sin(HA)/sinz
-        sinq[~sinz_nonzero] = 0
+        #if sinz != 0:
+        sinq = np.cos(lat)*np.sin(HA)/sinz
+        cosq = (np.cos(np.pi/2-lat) - cosz *np.cos(np.pi/2-dec))/(sinz*np.sin(np.pi/2-dec))
+
+#        else:
+            #sinq = 0
+            #cosq = 0
 
     #calculate refractive index
         wavers = 1/(wave**2)
@@ -69,7 +81,7 @@ def refraction_calc(data,racenter,deccenter):
     #calculate temp and pressure correction
         tcorr = 1+0.003661*temp
         num = 720.88*tcorr
-        N = N * ((pres * (1.+((1.049-0.0157*temp) * 10**-6 * pres))) / num)
+        N = N * ((pres * (1.+((1.049-0.0157*temp) * 10**-6 * pres))) / num)#N*((pres*(1.+(1.049-((0.0157*temp)*(1*10**-6)*pres))))/num)
 
     #calculate refraction
         R = N * 206265 * tanz
@@ -104,11 +116,13 @@ def refraction_calc(data,racenter,deccenter):
 
 
             #calculate parallactic angle
-                if sinz != 0:
-                    sinq = np.cos(lat)*np.sin(HA[j])/sinz
+                #if sinz != 0:
+                sinq = np.cos(lat)*np.sin(HA[j])/sinz
+                cosq = (np.cos(np.pi/2-lat) - cosz *np.cos(np.pi/2-dec[i]))/(sinz*np.sin(np.pi/2-dec[i]))
 
-                else:
-                    sinq = 0
+        #        else:
+                    #sinq = 0
+                    #cosq = 0
 
             #calculate refractive index
                 wavers = 1/(wave**2)
@@ -119,7 +133,7 @@ def refraction_calc(data,racenter,deccenter):
             #calculate temp and pressure correction
                 tcorr = 1+0.003661*temp
                 num = 720.88*tcorr
-                N = N * ((pres * (1.+((1.049-0.0157*temp) * 10**-6 * pres))) / num)
+                N = N * ((pres * (1.+((1.049-0.0157*temp) * 10**-6 * pres))) / num)#N*((pres*(1.+(1.049-((0.0157*temp)*(1*10**-6)*pres))))/num)
 
             #calculate refraction
                 R = N * 206265 * tanz
@@ -149,14 +163,18 @@ def refraction_calc(data,racenter,deccenter):
         sina = np.sin(lat)*np.sin(dec)+np.cos(lat)*np.cos(dec)*np.cos(HA)
         cosz = sina
         sinz = np.sqrt(1.-sina**2)
+        #print(sinz)
         tanz = sinz/cosz
 
 
     #calculate parallactic angle
-        cosq = np.empty(len(sinz))
-        sinz_nonzero = (sinz!=0)
-        cosq[sinz_nonzero] = (np.cos(np.pi/2-lat) - cosz *np.cos(np.pi/2-dec))/(sinz*np.sin(np.pi/2-dec))
-        cosq[~sinz_nonzero] = 0
+        #if sinz != 0:
+        sinq = np.cos(lat)*np.sin(HA)/sinz
+        cosq = (np.cos(np.pi/2-lat) - cosz *np.cos(np.pi/2-dec))/(sinz*np.sin(np.pi/2-dec))
+
+        #else:
+            #sinq = 0
+            #cosq = 0
 
     #calculate refractive index
         wavers = 1/(wave**2)
@@ -167,12 +185,13 @@ def refraction_calc(data,racenter,deccenter):
     #calculate temp and pressure correction
         tcorr = 1+0.003661*temp
         num = 720.88*tcorr
-        N = N * ((pres * (1.+((1.049-0.0157*temp) * 10**-6 * pres))) / num)
+        N = N * ((pres * (1.+((1.049-0.0157*temp) * 10**-6 * pres))) / num)#N*((pres*(1.+(1.049-((0.0157*temp)*(1*10**-6)*pres))))/num)
 
     #calculate refraction
         R = N * 206265 * tanz
 
     #calculate correction to RA and Dec
+        DA = R * sinq * rpas/np.cos(dec)
         DD = R * cosq * rpas
         return(DD*dpr)
 
@@ -200,11 +219,13 @@ def refraction_calc(data,racenter,deccenter):
 
 
             #calculate parallactic angle
-                if sinz != 0:
-                    cosq = (np.cos(np.pi/2-lat) - cosz *np.cos(np.pi/2-dec[i]))/(sinz*np.sin(np.pi/2-dec[i]))
+                #if sinz != 0:
+                sinq = np.cos(lat)*np.sin(HA[j])/sinz
+                cosq = (np.cos(np.pi/2-lat) - cosz *np.cos(np.pi/2-dec[i]))/(sinz*np.sin(np.pi/2-dec[i]))
 
-                else:
-                    cosq = 0
+                #else:
+                    #sinq = 0
+                    #cosq = 0
 
             #calculate refractive index
                 wavers = 1/(wave**2)
@@ -215,12 +236,13 @@ def refraction_calc(data,racenter,deccenter):
             #calculate temp and pressure correction
                 tcorr = 1+0.003661*temp
                 num = 720.88*tcorr
-                N = N * ((pres * (1.+((1.049-0.0157*temp) * 10**-6 * pres))) / num)
+                N = N * ((pres * (1.+((1.049-0.0157*temp) * 10**-6 * pres))) / num)#N*((pres*(1.+(1.049-((0.0157*temp)*(1*10**-6)*pres))))/num)
 
             #calculate refraction
                 R = N * 206265 * tanz
 
             #calculate correction to RA and Dec
+                DA = R * sinq * rpas/np.cos(dec[i])
                 DD = R * cosq * rpas
                 corrections[i,j] = DD*dpr
         return(np.swapaxes(corrections,0,1))
@@ -233,8 +255,8 @@ def refraction_calc(data,racenter,deccenter):
     ref_data = ra_rad_refraction_grid(ra_grid, dec_grid,HA)
     dec_ref_data = dec_rad_refraction_grid(ra_grid,dec_grid,HA)
     #call the actual interpolation function
-    interp = RegularGridInterpolator((corr_ra_range, corr_dec_range), ref_data,method='linear')
-    decinterp = RegularGridInterpolator((corr_ra_range,corr_dec_range), dec_ref_data,method='linear')
+    interp = RegularGridInterpolator((corr_ra_range, corr_dec_range), ref_data,method='linear',bounds_error=True)
+    decinterp = RegularGridInterpolator((corr_ra_range,corr_dec_range), dec_ref_data,method='linear',bounds_error=True)
     for i in range(len(data['Calc_RA'])):
         data['Calc_RA'][i] -= interp([data['Calc_RA'][i],data['Calc_Dec'][i]])
         data['Calc_Dec'][i] -= decinterp([data['Calc_RA'][i],data['Calc_Dec'][i]])

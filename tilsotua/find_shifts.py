@@ -7,12 +7,13 @@ import astropy.units as u
 from astroquery.gaia import Gaia
 from astroquery.mast import Catalogs
 from astropy.table import Table,Column
+from astropy.io import ascii,fits
 
 #for testing the ransac package
 import pyransac
 from pyransac import line2d
 
-def get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccenter,filename,adcuse):
+def get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccenter,filename,adcuse,maskbluID):
     #Set up arrays and columns to hold results
     rpd = np.pi/180.  #radians per degree
     ra_shifts=[]
@@ -70,8 +71,8 @@ def get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccent
 
             coord = SkyCoord(ra=ra_avg, dec=dec_avg, unit=(u.deg,u.deg),frame=ref_system)
             if catalog_keyword == 'gaia':
-                width = 200*u.arcsec
-                height = 200*u.arcsec
+                width = 400*u.arcsec
+                height = 400*u.arcsec
                 obj = Gaia.query_object_async(coordinate=coord, width=width,height=height)
                 mag_cutoff = (obj['phot_g_mean_flux']>18.)
                 obj = obj[mag_cutoff]
@@ -149,6 +150,7 @@ def get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccent
                 dec_shifts.append(dec_avg-obj['dec'][min_diff])
 
             i=i+4
+
         else:
             i=i+4
 #=================================================================================================================================
@@ -193,7 +195,6 @@ def get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccent
     print(small,'small shifts')
     print(removed,'elements removed from shift arrays')
     '''
-
     #set up dataset for ransac algorithm
     #go through in RA and Dec direction
     X = ra_centers
@@ -247,7 +248,7 @@ def get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccent
 
 #Determine whether or not to apply a shift. If the total dispersion value for the shift is too large, or is above 0.7 times the shift values
 #do not apply a shift.
-    if total_shift_dispersion >=2.0 or np.isnan(total_shift_final) == True:
+    if total_shift_dispersion >=1.0 or np.isnan(total_shift_final) == True or len(good_ra_shifts)<3:
         ra_shift_final = np.float64(0.0)
         dec_shift_final = np.float64(0.0)
         print('---------No Systematic Shift Found. No Shift Applied---------')

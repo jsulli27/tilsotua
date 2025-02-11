@@ -3,6 +3,7 @@ name = "tilsotua"
 version = "0.1.36"
 description = "tilsotua: reverse autoslit calculations of LRIS slitmasks"
 authors = ["Jessica Sullivan <jsulli27@nd.edu>"]
+license = "MIT"
 
 [tool.poetry.dependencies]
 python = "*"
@@ -12,6 +13,7 @@ panstamps = "*"
 pytest-shutil = "*"
 numpy = "*"
 astroquery = "*"
+regions = "*"
 pyyaml = "*"
 shapely = "*"
 scipy = "*"

@@ -9,6 +9,8 @@ from astropy.table import Table,Column,join,vstack
 from astropy.io import ascii,fits
 from astropy.time import Time
 import astropy.units as u
+from scipy.interpolate import RegularGridInterpolator
+from matplotlib import pyplot as plt
 
 import tilsotua.find_shifts as fs
 import tilsotua.refractioncorrection as ref
@@ -263,7 +265,7 @@ def xytowcs(data_input_name:str,output_file:str,
     copyfile(data_input_name+'.fits', output_file+'.fits')
     #Open the copied file
     hdu=fits.open(output_file+'.fits',mode='update')
-    #maskbluID = str(hdu['MaskBlu'].data['BluID'][0])
+    maskbluID = str(hdu['MaskBlu'].data['BluID'][0])
 
     #obtain the rotation angle of the instrument
     mask_design = hdu['MaskDesign'].data[0]
@@ -281,8 +283,6 @@ def xytowcs(data_input_name:str,output_file:str,
     #set the center of the mask to the corrected value
     ra0 =  str(ra0 +  DA1/rpd)
     dec0 = str(dec0 + DD1/rpd)
-    #ra0 = str(ra0/rpd)
-    #dec0 = str(dec0/rpd)
 
     #Grab the date the mask was made
     creation_date = mask_design['DesDate']
@@ -384,22 +384,22 @@ def xytowcs(data_input_name:str,output_file:str,
     print('-----------------Calculating Refraction Lookup Table------------------------')
     data = ref.refraction_calc(data,racenter*rpd,deccenter*rpd)
 
-    for i in range(len(data['Calc_RA'])):
-         temp1 = pr.precession(data['Calc_RA'][i],data['Calc_Dec'][i],epoch,2000.)
-         data['Calc_RA'][i] = temp1[0]
-         data['Calc_Dec'][i] = temp1[1]
+    temp1 = SkyCoord(ra=data['Calc_RA'], dec=data['Calc_Dec'], unit='deg', frame=FK5, equinox='J'+equ)
+    temp_updated = temp1.transform_to(FK5(equinox='J2000'))
+    data['Calc_RA'] = temp_updated.ra.deg
+    data['Calc_Dec'] = temp_updated.dec.deg
 
 
     #====================================================================================================================================
     #calculate the average offset for the dataset and refraction correction
     print('----------------Calculating Mask Shift-----------------')
-    data,x_centers,y_centers,ra_shifted_centers,dec_shifted_centers,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec = fs.get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccenter,catalog_file,adcuse)
+    data,x_centers,y_centers,ra_shifted_centers,dec_shifted_centers,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec = fs.get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccenter,catalog_file,adcuse,maskbluID)
     #create the error plot
     print('-----------------Creating Quick Look Plot---------------')
-    try:
-        qlp.create_qlp(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,output_file)
-    except:
-        print('ISSUE WITH QUICK LOOK PLOT...CHECK RESULTS')
+    #try:
+    qlp.create_qlp(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,output_file)
+    #except:
+    #    print('ISSUE WITH QUICK LOOK PLOT...CHECK RESULTS')
 
     w9f.create_ds9_file(data,ra_shifted_centers,dec_shifted_centers,rot_angle,scale,ref_system,catalog_obj_ra,catalog_obj_dec,output_file)
     #=====================================================================================================================================
