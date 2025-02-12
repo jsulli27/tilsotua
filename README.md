@@ -54,7 +54,7 @@ The CSV file contains the original coordinates of the slit corners in the mask c
 
 The DS9 region file contains the final slit positions for use in DS9.
 
-##Archival Slit Locations
+## Archival Slit Locations
 Sky positions of slit centers in archived LRIS slitmasks (through June 2020) are recorded in 'LRIS_slit_locations.fits' in the docs directory. Associated mask information, including the mask ID and PI, are also included.
 
 ## Other Useful information
