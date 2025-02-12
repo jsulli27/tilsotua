@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tilsotua"
-version = "0.1.36"
+version = "1.0.0"
 description = "tilsotua: reverse autoslit calculations of LRIS slitmasks"
 authors = ["Jessica Sullivan <jsulli27@nd.edu>"]
 license = "MIT"

@@ -14,7 +14,7 @@ setup_keywords['author'] = 'Jessica Sullivan et al'
 setup_keywords['author_email'] = 'jsulli27@nd.edu'
 setup_keywords['license'] = ''
 setup_keywords['url'] = 'https://github.com/jsulli27/tilsotua'
-setup_keywords['version'] = '0.0.dev0'
+setup_keywords['version'] = '1.0.0'
 # Use README.rst as long_description.
 setup_keywords['long_description'] = ''
 if os.path.exists('README.md'):
