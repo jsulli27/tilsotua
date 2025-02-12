@@ -13,6 +13,8 @@ from matplotlib.patches import Polygon as Pgon
 from astropy.visualization import PercentileInterval, ImageNormalize
 from glob import glob
 from matplotlib.gridspec import GridSpec
+from astropy.visualization.wcsaxes import add_scalebar
+import astropy.units as u
 
 #Function to create the quick look plots of the mask results
 def create_qlp(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,output_file):
@@ -35,7 +37,7 @@ def create_qlp(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,output
 #=================================================================================================================================
     #Set up the grid for the plot panels using GridSpec
     wcs = WCS(hdu.header)
-
+    
     fig = plt.figure(constrained_layout=True,figsize=(7,4))
     gs = GridSpec(3, 3, figure=fig,width_ratios = [3,1,1],height_ratios=[1,1,1])
     ax1 = fig.add_subplot(gs[:, :-2],projection=wcs)
@@ -151,8 +153,8 @@ def create_qlp(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,output
     pixels1b=utils.skycoord_to_pixel(temp1b, wcs=wcs, origin=0, mode='all')
     ax1.set_xlim([pixels1a[0],pixels1b[0]])
     ax1.set_ylim([pixels1a[1],pixels1b[1]])
-    ax1.set_xlabel(r'$\alpha [J2000]$',fontsize='large')
-    ax1.set_ylabel(r'$\delta [J2000]$',fontsize='large')
+    ax1.set_xlabel(r'$\alpha [\rm{J}2000]$',fontsize='large')
+    ax1.set_ylabel(r'$\delta [\rm{J}2000]$',fontsize='large')
     ax1.invert_xaxis()
 #=================================================================================================================================
     #Find the first six boxes and plot the cutout panels in the quick look plot.
@@ -358,7 +360,7 @@ def create_qlp(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,output
                 ax7.set_ylim([pixels1a[1],pixels1b[1]])
                 ax7.invert_xaxis()
         i = i+4
-    plt.savefig(output_file+'quicklookplot.pdf',bbox_inches='tight',pad_inches=0.5)
+    plt.savefig(output_file+'quicklookplot.pdf',bbox_inches='tight',pad_inches=0.1)
 #=================================================================================================================================
     #Delete the PanSTARRS image and directory
     #Comment this section out if you prefer to save the PanSTARRS image

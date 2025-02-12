@@ -4,11 +4,14 @@
 import numpy as np
 from astropy.table import Table,Column
 from scipy.interpolate import RegularGridInterpolator
+from matplotlib import pyplot as plt
+import matplotlib
+from astropy.io import ascii,fits
 def astrometry_calc(data,ra_center,dec_center):
 
     #create a grid of values to create the points for which the correction will be calculated
-    x_range = np.linspace(174,436, num = 100)
-    y_range = np.linspace(-174,174, num = 100)
+    x_range = np.linspace(173,437, num = 300)#np.linspace(174,436, num = 100)
+    y_range = np.linspace(-173,175, num = 300)#np.linspace(-174,174, num = 100)
     x_grid,y_grid = np.meshgrid(x_range, y_range, indexing='ij',sparse=True)
     #set up arrays to hold results later
     x_values = []
@@ -26,6 +29,7 @@ def astrometry_calc(data,ra_center,dec_center):
         Y_CENTER = 0.0    #center of the mask in y
         #set the fits values from autoslit that are used in the correction
         A=[2.0,  0.99476227,0.00728125,0.45412825E-6, -0.40955557E-5,0.96690643E-6]
+        B=[1.0, -0.00001856, 0.99906324 ]
 
         #Convert mm to CCD pixels. (Approximate, but as long as you
         #use exactly the same formula for inversion, that is OK.)
@@ -33,10 +37,12 @@ def astrometry_calc(data,ra_center,dec_center):
         YCCD = CCD_SIDE / 2.0 - (Y_CENTER - YIN) / CCD_SCALE
 
         XCCD_OUT = A[0] + A[1] * XCCD + A[2] * YCCD + A[3] * XCCD * XCCD + A[4] * YCCD * YCCD + A[5] * XCCD * YCCD
+        YCCD_OUT = B[0] + B[1] * XCCD + B[2] * YCCD
 
         #Now convert back to mm on the slitmask.
 
         XOUT = X_CENTER - (XCCD_OUT - CCD_SIDE / 2.0) * CCD_SCALE
+        YOUT = Y_CENTER + (YCCD_OUT - CCD_SIDE / 2.0) * CCD_SCALE
         return(XOUT-XIN)
 #=================================================================================================================================
     #create the routine for the astrometry correction
@@ -47,6 +53,7 @@ def astrometry_calc(data,ra_center,dec_center):
         X_CENTER = 305.0  #center of the mask in x
         Y_CENTER = 0.0    #center of the mask in y
         A=[2.0,  0.99476227,0.00728125,0.45412825E-6, -0.40955557E-5,0.96690643E-6]
+        B=[1.0, -0.00001856, 0.99906324 ]
 
         # Convert mm to CCD pixels. (Approximate, but as long as you
         # use exactly the same formula for inversion, that is OK.)
@@ -54,9 +61,11 @@ def astrometry_calc(data,ra_center,dec_center):
         YCCD = CCD_SIDE / 2.0 - (Y_CENTER - np.swapaxes(YIN, 0, 1)[None, :]) / CCD_SCALE
 
         XCCD_OUT = A[0] + A[1] * XCCD + A[2] * YCCD + A[3] * XCCD**2 + A[4] * YCCD**2 + A[5] * XCCD * YCCD
+        YCCD_OUT = B[0] + B[1] * XCCD + B[2] * YCCD
 
         # Now convert back to mm on the slitmask.
         XOUT = X_CENTER - (XCCD_OUT - CCD_SIDE / 2.0) * CCD_SCALE
+        YOUT = Y_CENTER + (YCCD_OUT - CCD_SIDE / 2.0) * CCD_SCALE
 
         corrections = XOUT - XIN[:, None]
         return corrections
@@ -70,6 +79,7 @@ def astrometry_calc(data,ra_center,dec_center):
         X_CENTER = 305.0  #center of the mask in x
         Y_CENTER = 0.0    #center of the mask in y
         #set the fits values from autoslit that are used in the correction
+        A=[2.0,  0.99476227,0.00728125,0.45412825E-6, -0.40955557E-5,0.96690643E-6]
         B=[1.0, -0.00001856, 0.99906324 ]
 
         #Convert mm to CCD pixels. (Approximate, but as long as you
@@ -77,11 +87,12 @@ def astrometry_calc(data,ra_center,dec_center):
         XCCD = CCD_SIDE / 2.0 + (X_CENTER - XIN) / CCD_SCALE
         YCCD = CCD_SIDE / 2.0 - (Y_CENTER - YIN) / CCD_SCALE
 
-        #XCCD_OUT = A[0] + A[1] * XCCD + A[2] * YCCD + A[3] * XCCD * XCCD + A[4] * YCCD * YCCD + A[5] * XCCD * YCCD
+        XCCD_OUT = A[0] + A[1] * XCCD + A[2] * YCCD + A[3] * XCCD * XCCD + A[4] * YCCD * YCCD + A[5] * XCCD * YCCD
         YCCD_OUT = B[0] + B[1] * XCCD + B[2] * YCCD
 
         #Now convert back to mm on the slitmask.
 
+        XOUT = X_CENTER - (XCCD_OUT - CCD_SIDE / 2.0) * CCD_SCALE
         YOUT = Y_CENTER + (YCCD_OUT - CCD_SIDE / 2.0) * CCD_SCALE
 
         return(YOUT-YIN)
@@ -93,6 +104,7 @@ def astrometry_calc(data,ra_center,dec_center):
         CCD_SCALE = 0.15767
         X_CENTER = 305.0  #center of the mask in x
         Y_CENTER = 0.0    #center of the mask in y
+        A=[2.0,  0.99476227,0.00728125,0.45412825E-6, -0.40955557E-5,0.96690643E-6]
         B=[1.0, -0.00001856, 0.99906324 ]
 
         # Convert mm to CCD pixels. (Approximate, but as long as you
@@ -100,9 +112,11 @@ def astrometry_calc(data,ra_center,dec_center):
         XCCD = CCD_SIDE / 2.0 + (X_CENTER - XIN[:, None]) / CCD_SCALE
         YCCD = CCD_SIDE / 2.0 - (Y_CENTER - np.swapaxes(YIN, 0, 1)[None, :]) / CCD_SCALE
 
+        XCCD_OUT = A[0] + A[1] * XCCD + A[2] * YCCD + A[3] * XCCD**2 + A[4] * YCCD**2 + A[5] * XCCD * YCCD
         YCCD_OUT = B[0] + B[1] * XCCD + B[2] * YCCD
 
         # Now convert back to mm on the slitmask.
+        XOUT = X_CENTER - (XCCD_OUT - CCD_SIDE / 2.0) * CCD_SCALE
         YOUT = Y_CENTER + (YCCD_OUT - CCD_SIDE / 2.0) * CCD_SCALE
 
         corrections = YOUT - np.swapaxes(YIN, 0, 1)[None, :]
@@ -112,8 +126,8 @@ def astrometry_calc(data,ra_center,dec_center):
     ref_data = x_astrometry_correction_calc_grid(x_grid, y_grid)
     y_ref_data = y_astrometry_correction_calc_grid(x_grid,y_grid)
     #call the actual interpolation function
-    interp = RegularGridInterpolator((corr_x_range, corr_y_range), ref_data,method='linear')
-    yinterp = RegularGridInterpolator((corr_x_range,corr_y_range), y_ref_data,method='linear')
+    interp = RegularGridInterpolator((corr_x_range, corr_y_range), ref_data,method='linear',bounds_error=True)
+    yinterp = RegularGridInterpolator((corr_x_range,corr_y_range), y_ref_data,method='linear',bounds_error=True)
 
 #=================================================================================================================================
     #apply the correction to the X,Y slit positions
