@@ -1,5 +1,7 @@
-#calculate the final correction autoslit makes to the x,y positions for the milling maching output file.
-#This doesn't depend on WCS position, so I should just calculate a single table that the code reads in
+"""
+Module to calculate, then remove the distortion correction applied at each slit
+position on the mask. This is done with linear interpolation.
+"""
 
 import numpy as np
 from astropy.table import Table,Column
@@ -8,7 +10,21 @@ from matplotlib import pyplot as plt
 import matplotlib
 from astropy.io import ascii,fits
 def astrometry_calc(data,ra_center,dec_center):
+    """
+    Calculates the distortion correction applied at each mask location and subtracts
+    the correction from the current slit positions.
 
+    Args:
+        data (table): Mask information table
+        
+        ra_center (float): RA of mask center
+
+        dec_center (float): Dec of mask center
+
+    Returns:
+        data (Table): Mask information table with distortion correction removed from slit
+                      positions.
+    """
     #create a grid of values to create the points for which the correction will be calculated
     x_range = np.linspace(173,437, num = 300)#np.linspace(174,436, num = 100)
     y_range = np.linspace(-173,175, num = 300)#np.linspace(-174,174, num = 100)
@@ -22,6 +38,17 @@ def astrometry_calc(data,ra_center,dec_center):
 #=================================================================================================================================
     #create the routine for the astrometry correction
     def x_astrometry_correction_calc(XIN,YIN):
+        """
+        Function to calculate the distortion correction in the X position for a range of mask positions
+
+        Args:
+            XIN (array): 1D array of X positions on mask
+
+            YIN (array): 1D array of Y positions on mask
+
+        Returns:
+            Array of the distortion correction values for the X position.
+        """
         #set some constants
         CCD_SIDE = 2048.0
         CCD_SCALE = 0.15767
@@ -47,6 +74,19 @@ def astrometry_calc(data,ra_center,dec_center):
 #=================================================================================================================================
     #create the routine for the astrometry correction
     def x_astrometry_correction_calc_grid(XIN,YIN):
+        """
+        Function to calculate the distortion correction in the X position for a range of mask positions.
+        This will be passed to the linear interpolator.
+
+        Args:
+            XIN (array): 1D array of X positions on mask
+
+            YIN (array): 1D array of Y positions on mask
+
+        Returns:
+            2D Array of the distortion correction values for the X position.
+        """
+
         # Constants
         CCD_SIDE = 2048.0
         CCD_SCALE = 0.15767
@@ -73,6 +113,17 @@ def astrometry_calc(data,ra_center,dec_center):
 #=================================================================================================================================
     #create the routine for the astrometry correction
     def y_astrometry_correction_calc(XIN,YIN):
+        """
+        Function to calculate the distortion correction in the Y position for a range of mask positions
+
+        Args:
+            XIN (array): 1D array of X positions on mask
+
+            YIN (array): 1D array of Y positions on mask
+
+        Returns:
+            Array of the distortion correction values for the Y position.
+        """
         #set some constants
         CCD_SIDE = 2048.0
         CCD_SCALE = 0.15767
@@ -99,6 +150,19 @@ def astrometry_calc(data,ra_center,dec_center):
 #=================================================================================================================================
     #create the routine for the astrometry correction
     def y_astrometry_correction_calc_grid(XIN,YIN):
+        """
+        Function to calculate the distortion correction in the Y position for a range of mask positions.
+        This will be passed to the linear interpolator.
+
+        Args:
+            XIN (array): 1D array of X positions on mask
+
+            YIN (array): 1D array of Y positions on mask
+
+        Returns:
+            2D Array of the distortion correction values for the Y position.
+        """
+
         # Constants
         CCD_SIDE = 2048.0
         CCD_SCALE = 0.15767

@@ -1,11 +1,28 @@
-#function for creating the ds9 region files
+"""
+Module to write DS9 file of mask slit positions.
+"""
 
 #read in packages
 import numpy as np
 from astropy.coordinates import SkyCoord, ICRS, Galactic, FK4, FK5
 from astropy.table import Table,Column
 
-def create_ds9_file(data,ra_centers,dec_centers,theta,scale,ref_system,catalog_object_ra,catalog_object_dec,output_file):
+def create_ds9_file(data,theta,scale,ref_system,output_file):
+    """
+    Function to generated the DS9 file. Creates the string for lines to be written to the DS9 file for each slit.
+
+    Args:
+        data (table): table of mask data
+
+        theta (float): mask position angle
+        
+        ref_system (str): mask sky coordinate reference system
+
+        output_file (str): outfile file base name
+
+    Returns:
+        None
+    """
     data_copy = data['RA_Center','Dec_Center','X','Y']
     #sort the data table by y position for labeling purpoes
     avg_y_values = np.zeros(len(data_copy))

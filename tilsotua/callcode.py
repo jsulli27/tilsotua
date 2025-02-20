@@ -1,4 +1,7 @@
-#read the file given in the command line and read
+"""
+Module to read in the input file from the command line
+Input file should have the mask files and desired output filename on individual lines separated by a space
+"""
 
 import sys
 import numpy as np
@@ -11,11 +14,6 @@ import astropy.units as u
 
 import tilsotua.find_shifts as fs
 import tilsotua.LRIS_Mask_Coords_to_WCS as lriscoords
-
-'''
-Read in the input file from the command line
-Input file should have the mask files and desired output filename on individual lines separated by a space
-'''
 
 #Read in the file line by line
 f = open(sys.argv[1],"r")

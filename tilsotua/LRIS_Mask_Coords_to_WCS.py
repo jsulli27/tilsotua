@@ -1,6 +1,18 @@
-#main routine to calculate WCS positions from LRIS mask positions
-#reads in file containing
+"""
+Main Module containing the function to calculate sky positions of LRIS Slitmasks.
 
+Functions:
+generate_object_cat: Populates ObjectCat, SlitObjMap and DesiSlit tables using the
+                    .file1 autoslit output file and object file provided to autoslit
+                    during mask creation.
+
+refraction_correction: Function used to calculate the refraction correction at a
+                        mask position
+
+xytowcs: Main tilsotua function to be called to calculate mask positions with archival
+         mask files or autoslit output files. Returns the sky positions of the slitmasks
+         in mask fits file, DS9 region file, and CSV file.
+"""
 #import packages
 import sys
 import numpy as np
@@ -28,20 +40,26 @@ def generate_object_cat(obj_file:str, file1:str, xy_map:Table,
     """
     Fill in the ObjectCat, SlitObjMap and DesiSlit tables in the
     output fits file.
+
     Args:
-    obj_file (str): Path to object file fed to AUTOSLIT
-    file1 (str): Path to the autoslit object file
-    xy_map (Table)
-    mag_band (str, optional): This is the band in which
-            the oobject magnitudes are reported in the AUTOSLIT
-            files. Unfortunately, this info must be manually input to
-            this function as AUTOSLIT doesn't recieve/record it. Assumes
-            I band by default.
+        obj_file (str): Path to object file fed to AUTOSLIT
+
+        file1 (str): Path to the autoslit object file
+
+        xy_map (Table): RA and Dec slit positions
+
+        mag_band (str, optional): This is the band in which
+        the object magnitudes are reported in the AUTOSLIT
+        files. Unfortunately, this info must be manually input to
+        this function as AUTOSLIT doesn't recieve/record it. Assumes
+        I band by default.
 
     Returns:
-    ObjectCat (Table): Object catalog.
-    SlitObjMap (Table): Table mapping slits to catalog objects.
-    DesiSlits (Table): Slit geometry parameter table. Does not
+        ObjectCat (Table): Object catalog.
+
+        SlitObjMap (Table): Table mapping slits to catalog objects.
+
+        DesiSlits (Table): Slit geometry parameter table. Does not
         contain slitRA/slitDec columns. Those are filled outside
         this function.
     """
@@ -152,6 +170,7 @@ def refraction_correction(ra0:float, dec0:float):
 
     Args:
         ra,dec (float,float): Pointing coordinates
+        
     Returns:
         dRa, dDec (float, float): Delta in RA and Dec to be added
             to ra, dec for the correct pointing.
@@ -393,7 +412,7 @@ def xytowcs(data_input_name:str,output_file:str,
     #====================================================================================================================================
     #calculate the average offset for the dataset and refraction correction
     print('----------------Calculating Mask Shift-----------------')
-    data,x_centers,y_centers,ra_shifted_centers,dec_shifted_centers,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec = fs.get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccenter,catalog_file,adcuse,maskbluID)
+    data,x_centers,y_centers,ra_shifted_centers,dec_shifted_centers,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec = fs.get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccenter,adcuse)
     #create the error plot
     print('-----------------Creating Quick Look Plot---------------')
     #try:
@@ -401,7 +420,7 @@ def xytowcs(data_input_name:str,output_file:str,
     #except:
     #    print('ISSUE WITH QUICK LOOK PLOT...CHECK RESULTS')
 
-    w9f.create_ds9_file(data,ra_shifted_centers,dec_shifted_centers,rot_angle,scale,ref_system,catalog_obj_ra,catalog_obj_dec,output_file)
+    w9f.create_ds9_file(data,rot_angle,scale,ref_system,output_file)
     #=====================================================================================================================================
     #update the fits file extension to include the calculated center positions of the slits
 

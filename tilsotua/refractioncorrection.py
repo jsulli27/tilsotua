@@ -1,5 +1,8 @@
-#remove the refraction correction from the mask results
-
+"""
+Module to remove the refraction correction from the mask results. Interpolates
+the refraction correction applied by autoslit during mask creation and removes it
+from the slit positions.
+"""
 import numpy as np
 from astropy.table import Table,Column
 from matplotlib import pyplot as plt
@@ -10,14 +13,17 @@ def refraction_calc(data,racenter,deccenter):
     """
     Remove the effect of the refraction correction from RA,Dec slit
     positions.
+    
     Args:
-    data (table): Current table of slit data
-    racenter (float): RA of mask center in radians
-    deccenter (float): Dec of mask center in radians
+        data (table): Current table of slit data
+
+        racenter (float): RA of mask center in radians
+
+        deccenter (float): Dec of mask center in radians
 
 
     Returns:
-    data (Table): Data table with updated slit positions that are equivalent
+        data (Table): Data table with updated slit positions that are equivalent
                   to pre-refraction correction autoslit positions in RA and Dec
 
     """
@@ -42,7 +48,19 @@ def refraction_calc(data,racenter,deccenter):
 
     #======================================================================================
     def ra_rad_refraction(ra,dec,HA):
+        """
+        Function to calculate the refraction correction in the RA position for a range of mask positions
 
+        Args:
+            ra (array): 1D array of RA positions on mask
+
+            dec (array): 1D array of Dec positions on mask
+
+            HA (float): Hour angle selected for mask
+
+        Returns:
+            1D Array of the refraction correction values in degrees for the RA position.
+        """
         rph = np.pi*15./180 #radians per hour
         rpd = np.pi/180. #radians per degree
         dpr = 1/rpd #degrees per radian
@@ -93,7 +111,19 @@ def refraction_calc(data,racenter,deccenter):
     #======================================================================================
 
     def ra_rad_refraction_grid(ra,dec,HA):
+        """
+        Function to calculate the refraction correction in the RA position for a range of mask positions
 
+        Args:
+            ra (array): 1D array of RA positions on mask
+
+            dec (array): 1D array of Dec positions on mask
+
+            HA (float): Hour angle selected for mask
+
+        Returns:
+            2D Array of the refraction correction values in degrees for the RA position.
+        """
         rph = np.pi*15./180 #radians per hour
         rpd = np.pi/180. #radians per degree
         dpr = 1/rpd #degrees per radian
@@ -147,7 +177,19 @@ def refraction_calc(data,racenter,deccenter):
 
     #======================================================================================
     def dec_rad_refraction(ra,dec,HA):
+        """
+        Function to calculate the refraction correction in the Dec position for a range of mask positions
 
+        Args:
+            ra (array): 1D array of RA positions on mask
+
+            dec (array): 1D array of Dec positions on mask
+
+            HA (float): Hour angle selected for mask
+
+        Returns:
+            1D Array of the refraction correction values in degrees for the Dec position.
+        """
         rph = np.pi*15./180 #radians per hour
         rpd = np.pi/180. #radians per degree
         dpr = 1/rpd #degrees per radian
@@ -196,7 +238,19 @@ def refraction_calc(data,racenter,deccenter):
         return(DD*dpr)
 
     def dec_rad_refraction_grid(ra,dec,HA):
+        """
+        Function to calculate the refraction correction in the Dec position for a range of mask positions
 
+        Args:
+            ra (array): 1D array of RA positions on mask
+
+            dec (array): 1D array of Dec positions on mask
+
+            HA (float): Hour angle selected for mask
+
+        Returns:
+            2D Array of the refraction correction values in degrees for the Dec position.
+        """
         rph = np.pi*15./180 #radians per hour
         rpd = np.pi/180. #radians per degree
         dpr = 1/rpd #degrees per radian
