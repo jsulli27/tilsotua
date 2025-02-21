@@ -1,2 +1,2 @@
 sphinx-rtd-theme
-https://github.com/jsulli27/tilsotua/tree/documentation
+https://github.com/jsulli27/tilsotua.git
