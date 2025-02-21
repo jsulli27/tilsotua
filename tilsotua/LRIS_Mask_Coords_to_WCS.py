@@ -9,6 +9,8 @@ from astropy.table import Table,Column,join,vstack
 from astropy.io import ascii,fits
 from astropy.time import Time
 import astropy.units as u
+from scipy.interpolate import RegularGridInterpolator
+from matplotlib import pyplot as plt
 
 import tilsotua.find_shifts as fs
 import tilsotua.refractioncorrection as ref
@@ -265,7 +267,7 @@ def xytowcs(data_input_name:str,output_file:str,
     copyfile(data_input_name+'.fits', output_file+'.fits')
     #Open the copied file
     hdu=fits.open(output_file+'.fits',mode='update')
-    #maskbluID = str(hdu['MaskBlu'].data['BluID'][0])
+    maskbluID = str(hdu['MaskBlu'].data['BluID'][0])
 
     #obtain the rotation angle of the instrument
     mask_design = hdu['MaskDesign'].data[0]
@@ -283,8 +285,6 @@ def xytowcs(data_input_name:str,output_file:str,
     #set the center of the mask to the corrected value
     ra0 =  str(ra0 +  DA1/rpd)
     dec0 = str(dec0 + DD1/rpd)
-    #ra0 = str(ra0/rpd)
-    #dec0 = str(dec0/rpd)
 
     #Grab the date the mask was made
     creation_date = mask_design['DesDate']
@@ -341,16 +341,8 @@ def xytowcs(data_input_name:str,output_file:str,
 
     #apply the astrometry correction to the x,y values in the mask frame
     print('-------------------Applying Distortion Correction-------------------')
-    astro_table = ac.astrometry_calc(ra0,dec0)
-    for entry in data:
-        #distance = np.zeros(len(astro_table))
-        #for j in range(len(astro_table)):
-        #    distance[j] = np.sqrt(((data['X'][i]-astro_table['Aparent X'][j]))**2+(data['Y'][i]-astro_table['Aparent Y'][j])**2)
-        distance = np.sqrt((entry['X']-astro_table['Aparent X'])**2+(entry['Y']-astro_table['Aparent Y'])**2)
-        val = np.argmin(distance)
-        entry['X'] -= astro_table['X Offset'][val]
-        entry['Y'] -= astro_table['Y Offset'][val]
-
+    #astro_table = ac.astrometry_calc(data,ra0,dec0)
+    data = ac.astrometry_calc(data,ra0,dec0)
 
     #add columns to data table to eventually hold the calculated RA and Dec for each object
     data['Calc_RA'] = 0.
@@ -364,20 +356,20 @@ def xytowcs(data_input_name:str,output_file:str,
     theta = (-rot_angle) * rpd
 
     print('--------------------Completing Inverse Gnomic Projection--------------------')
-    #have to correct the center coordiantes before inverse gnomic projectoin
-    ra0 = ra0*rpd - (x0*np.cos(theta)*rpas/np.cos(dec0*rpd))
-    dec0 = dec0*rpd - x0*np.sin(theta)*rpas
-
     #correct the x and y coords for the bend and tilt in the mask
-    x_prime = np.cos(mask_angle)*(x_input)/scale
-    y_prime = np.cos(bend)*(y_input)/scale
+    x_prime = np.cos(mask_angle)*(x_input)
+    y_prime = np.cos(bend)*(y_input)
 
     #take x,y to the eta and nu gnomic projection coordinates (rotation matrix)
-    eta = (np.cos(theta)*x_prime-np.sin(theta)*y_prime)*rpas
-    nu =  (np.sin(theta)*x_prime+np.cos(theta)*y_prime)*rpas
+    eta = (np.cos(theta)*x_prime-np.sin(theta)*y_prime)*rpas/scale
+    nu =  (np.sin(theta)*x_prime+np.cos(theta)*y_prime)*rpas/scale
     #take eta and nu to ra and dec (standard already calculated inversion)
     rho = np.sqrt(eta**2+nu**2)
     c = np.arctan2(rho,1.)
+
+    #have to correct the center coordiantes before inverse gnomic projectoin
+    ra0 = ra0*rpd - (x0*np.cos(theta)*rpas/np.cos(dec0*rpd))
+    dec0 = dec0*rpd - x0*np.sin(theta)*rpas
 
     #calculate the final ra and dec using the inverse gnomic projection
     ra_t = eta*np.sin(c)
@@ -393,48 +385,24 @@ def xytowcs(data_input_name:str,output_file:str,
     #===================================================================================================================================
     #Now apply refraction correction to each of the points on the mask
     print('-----------------Calculating Refraction Lookup Table------------------------')
-    refraction_table = ref.refraction_calc(racenter*rpd,deccenter*rpd)
-    #apply correction for each point
-    #for i in range(len(data['Calc_RA'])):
-    #    distance = np.zeros(len(refraction_table))
-    #    for j in range(len(refraction_table)):
-    #        distance[j] = np.sqrt(((data['Calc_RA'][i]-refraction_table['Aparent RA'][j])*np.cos(data['Calc_Dec'][i]))**2+(data['Calc_Dec'][i]-refraction_table['Aparent Dec'][j])**2)
-    #    val = np.argmin(distance)
-    #    data['Calc_RA'][i]= data['Calc_RA'][i]-refraction_table['RA Offset'][val]
-    #    data['Calc_Dec'][i]= data['Calc_Dec'][i]-refraction_table['Dec Offset'][val]
-#
-    #apply correction for each point:
-    # First cross match the two catalogs. i.e. find closest object in refraction table for entry in data
-    refract_coords = SkyCoord(refraction_table['Aparent RA'], refraction_table['Aparent Dec'], unit="deg")
-    data_coords = SkyCoord(data['Calc_RA'], data['Calc_Dec'], unit="deg")
-    idx, _, _ = data_coords.match_to_catalog_sky(refract_coords)
-    matched_refraction_tab = refraction_table[idx]
+    data = ref.refraction_calc(data,racenter*rpd,deccenter*rpd)
 
-    # Apply offsets based on cross match. Not worrying about the cross-match separation threshold here.
-    data['Calc_RA'] -= matched_refraction_tab['RA Offset']
-    data['Calc_Dec'] -= matched_refraction_tab['Dec Offset']
+    temp1 = SkyCoord(ra=data['Calc_RA'], dec=data['Calc_Dec'], unit='deg', frame=FK5, equinox='J'+equ)
+    temp_updated = temp1.transform_to(FK5(equinox='J2000'))
+    data['Calc_RA'] = temp_updated.ra.deg
+    data['Calc_Dec'] = temp_updated.dec.deg
 
-    for i in range(len(data['Calc_RA'])):
-         temp1 = pr.precession(data['Calc_RA'][i],data['Calc_Dec'][i],epoch,2000.)
-         data['Calc_RA'][i] = temp1[0]
-         data['Calc_Dec'][i] = temp1[1]
-#        temp = SkyCoord(str(data['Calc_RA'][i])+' '+str(data['Calc_Dec'][i]),frame=ref_system,unit=(u.deg,u.deg),equinox='J'+equ)
-#        fk5_2000 = FK5(equinox='J2000')
-    #take RA,Dec and transform to the J2000 frame
-#        temp1=temp.transform_to(fk5_2000)
-#        data['Calc_RA'][i] = temp1.ra.deg
-#        data['Calc_Dec'][i] = temp1.dec.deg
 
     #====================================================================================================================================
     #calculate the average offset for the dataset and refraction correction
     print('----------------Calculating Mask Shift-----------------')
-    data,x_centers,y_centers,ra_shifted_centers,dec_shifted_centers,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec = fs.get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccenter,catalog_file,adcuse)
+    data,x_centers,y_centers,ra_shifted_centers,dec_shifted_centers,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec = fs.get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccenter,catalog_file,adcuse,maskbluID)
     #create the error plot
     print('-----------------Creating Quick Look Plot---------------')
-    try:
-        qlp.create_qlp(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,output_file)
-    except:
-        print('ISSUE WITH QUICK LOOK PLOT...CHECK RESULTS')
+    #try:
+    qlp.create_qlp(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,output_file)
+    #except:
+    #    print('ISSUE WITH QUICK LOOK PLOT...CHECK RESULTS')
 
     w9f.create_ds9_file(data,ra_shifted_centers,dec_shifted_centers,rot_angle,scale,ref_system,catalog_obj_ra,catalog_obj_dec,output_file)
     #=====================================================================================================================================
@@ -474,7 +442,7 @@ def xytowcs(data_input_name:str,output_file:str,
         warnings.warn("ObjectCat and SlitObjMap tables are not populated. Your output will not contain object names.",
                       category=UserWarning)
     hdu.flush()
-    
+
     #write out the data and results to the output file
     ascii.write(data,output_file+'.csv',format='csv',overwrite=True)
 
