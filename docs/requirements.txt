@@ -1,1 +1,12 @@
 sphinx-rtd-theme
+python
+astropy
+matplotlib
+panstamps
+pytest-shutil
+numpy
+astroquery
+regions
+pyyaml
+shapely
+scipy
