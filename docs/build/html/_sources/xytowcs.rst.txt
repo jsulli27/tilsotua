@@ -1,4 +1,0 @@
-xytowcs
-=======
-
-.. autofunction:: tilsotua.xytowcs
