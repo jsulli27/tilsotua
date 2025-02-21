@@ -1,5 +1,4 @@
 sphinx-rtd-theme
-python
 astropy
 matplotlib
 panstamps
