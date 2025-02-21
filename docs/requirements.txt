@@ -9,3 +9,4 @@ regions
 pyyaml
 shapely
 scipy
+pyransac
