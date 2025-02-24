@@ -169,10 +169,12 @@ def refraction_correction(ra0:float, dec0:float):
     correct for refraction and return the delta in RA and Dec.
 
     Args:
-        ra,dec (float,float): Pointing coordinates
-        
+        ra,dec: float,float
+            Pointing coordinates
+
     Returns:
-        dRa, dDec (float, float): Delta in RA and Dec to be added
+        dRa, dDec: float, float
+            Delta in RA and Dec to be added
             to ra, dec for the correct pointing.
     """
     #Taken directly from autoslit
@@ -222,30 +224,34 @@ def xytowcs(data_input_name:str,output_file:str,
     the missing data filled in.
 
     Args:
-
-        data_input_name (str): Path to the input FITS file or autoslit-produced
+        data_input_name: str
+            Path to the input FITS file or autoslit-produced
             ".file3" file. The FITS file would be produced during the mask design
             ingestion process. i.e. the FITS file generated when AUTOSLIT .file3
             ascii files are fed mask submission webpage.  If the input is a .file3,
             a FITS file for the mask will be automatically generated.
 
-        output_file (str): Name of the output file you'd
+        output_file: str
+            Name of the output file you'd
             like to generate. DO NOT INCLUDE FILE EXTENSIONS
             like .fits or .csv. e.g. "output_file".
 
-        obj_file (str, optional): Path to the object catalog
-            file that was used as an input to AUTOSLIT when generating
-            the mask design files corresponding to data_input_name.
+        obj_file: str, optional
+            Path to the object catalog file that was used as an input to AUTOSLIT
+            when generating the mask design files corresponding to data_input_name.
 
-        file1 (str, optional): Path to the list of objects generated
+        file1: str, optional
+            Path to the list of objects generated
             by AUTOSLIT. Has the extension of ".file1" by default. OBJ_FILE
             AND FILE1 ARE NECESSARY TO POPULATE OBJECT NAMES IN THE OUTPUT.
 
-        autofile (str, optional): Path to the autoslit output file
+        autofile: str, optional
+            Path to the autoslit output file
             (extension ".file3") to be used if the mask FITS file needs to
             be generated before anything else is done.
 
-        mag_band (str, optional): Filter band in which AUTOSLIT
+        mag_band: str, optional
+            Filter band in which AUTOSLIT
             was fed object magnitudes.
 
     Returns:

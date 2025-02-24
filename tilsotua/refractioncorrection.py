@@ -13,18 +13,22 @@ def refraction_calc(data,racenter,deccenter):
     """
     Remove the effect of the refraction correction from RA,Dec slit
     positions.
-    
+
     Args:
-        data (table): Current table of slit data
+        data: table
+            Current table of slit data
 
-        racenter (float): RA of mask center in radians
+        racenter: float
+            RA of mask center in radians
 
-        deccenter (float): Dec of mask center in radians
+        deccenter: float
+            Dec of mask center in radians
 
 
     Returns:
-        data (Table): Data table with updated slit positions that are equivalent
-                  to pre-refraction correction autoslit positions in RA and Dec
+        data: table
+            Data table with updated slit positions that are equivalent
+            to pre-refraction correction autoslit positions in RA and Dec
 
     """
 
@@ -52,11 +56,14 @@ def refraction_calc(data,racenter,deccenter):
         Function to calculate the refraction correction in the RA position for a range of mask positions
 
         Args:
-            ra (array): 1D array of RA positions on mask
+            ra: array
+                1D array of RA positions on mask
 
-            dec (array): 1D array of Dec positions on mask
+            dec: array
+                1D array of Dec positions on mask
 
-            HA (float): Hour angle selected for mask
+            HA: float
+                Hour angle selected for mask
 
         Returns:
             1D Array of the refraction correction values in degrees for the RA position.
@@ -115,11 +122,14 @@ def refraction_calc(data,racenter,deccenter):
         Function to calculate the refraction correction in the RA position for a range of mask positions
 
         Args:
-            ra (array): 1D array of RA positions on mask
+            ra: array
+                1D array of RA positions on mask
 
-            dec (array): 1D array of Dec positions on mask
+            dec: array
+                1D array of Dec positions on mask
 
-            HA (float): Hour angle selected for mask
+            HA: float
+                Hour angle selected for mask
 
         Returns:
             2D Array of the refraction correction values in degrees for the RA position.
@@ -181,11 +191,14 @@ def refraction_calc(data,racenter,deccenter):
         Function to calculate the refraction correction in the Dec position for a range of mask positions
 
         Args:
-            ra (array): 1D array of RA positions on mask
+            ra: array
+                1D array of RA positions on mask
 
-            dec (array): 1D array of Dec positions on mask
+            dec: array
+                1D array of Dec positions on mask
 
-            HA (float): Hour angle selected for mask
+            HA: float
+                Hour angle selected for mask
 
         Returns:
             1D Array of the refraction correction values in degrees for the Dec position.
@@ -242,11 +255,14 @@ def refraction_calc(data,racenter,deccenter):
         Function to calculate the refraction correction in the Dec position for a range of mask positions
 
         Args:
-            ra (array): 1D array of RA positions on mask
+            ra: array
+                1D array of RA positions on mask
 
-            dec (array): 1D array of Dec positions on mask
+            dec: array
+                1D array of Dec positions on mask
 
-            HA (float): Hour angle selected for mask
+            HA: float
+                Hour angle selected for mask
 
         Returns:
             2D Array of the refraction correction values in degrees for the Dec position.

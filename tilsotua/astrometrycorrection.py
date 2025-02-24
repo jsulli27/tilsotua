@@ -15,14 +15,18 @@ def astrometry_calc(data,ra_center,dec_center):
     the correction from the current slit positions.
 
     Args:
-        data (table): Mask information table
-        
-        ra_center (float): RA of mask center
+        data: table
+            Mask information table
 
-        dec_center (float): Dec of mask center
+        ra_center: float
+            RA of mask center
+
+        dec_center: float
+            Dec of mask center
 
     Returns:
-        data (Table): Mask information table with distortion correction removed from slit
+        data: table
+            Mask information table with distortion correction removed from slit
                       positions.
     """
     #create a grid of values to create the points for which the correction will be calculated
@@ -42,9 +46,11 @@ def astrometry_calc(data,ra_center,dec_center):
         Function to calculate the distortion correction in the X position for a range of mask positions
 
         Args:
-            XIN (array): 1D array of X positions on mask
+            XIN: array
+                1D array of X positions on mask
 
-            YIN (array): 1D array of Y positions on mask
+            YIN: array
+                1D array of Y positions on mask
 
         Returns:
             Array of the distortion correction values for the X position.
@@ -79,9 +85,11 @@ def astrometry_calc(data,ra_center,dec_center):
         This will be passed to the linear interpolator.
 
         Args:
-            XIN (array): 1D array of X positions on mask
+            XIN: array
+                1D array of X positions on mask
 
-            YIN (array): 1D array of Y positions on mask
+            YIN: array
+                1D array of Y positions on mask
 
         Returns:
             2D Array of the distortion correction values for the X position.
@@ -117,9 +125,11 @@ def astrometry_calc(data,ra_center,dec_center):
         Function to calculate the distortion correction in the Y position for a range of mask positions
 
         Args:
-            XIN (array): 1D array of X positions on mask
+            XIN: array
+                1D array of X positions on mask
 
-            YIN (array): 1D array of Y positions on mask
+            YIN: array
+                1D array of Y positions on mask
 
         Returns:
             Array of the distortion correction values for the Y position.
@@ -155,9 +165,11 @@ def astrometry_calc(data,ra_center,dec_center):
         This will be passed to the linear interpolator.
 
         Args:
-            XIN (array): 1D array of X positions on mask
+            XIN: array
+                1D array of X positions on mask
 
-            YIN (array): 1D array of Y positions on mask
+            YIN: array
+                1D array of Y positions on mask
 
         Returns:
             2D Array of the distortion correction values for the Y position.

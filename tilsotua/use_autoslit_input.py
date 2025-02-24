@@ -19,7 +19,8 @@ def gen_from_auto(autofile):
     ADC was used for caluclations in the main code.
 
     Args:
-        autofile (str): Path to autoslit output .file3 for mask
+        autofile: str
+            Path to autoslit output .file3 for mask
 
     Returns:
         None
@@ -47,12 +48,15 @@ def gen_from_auto(autofile):
         """
         Function to search for the lines in a file that match a given string
         Args:
-            line_to_match (str): string to exactly match in set of lines
-            
-            fp (str): content of lines to search
+            line_to_match: str
+                string to exactly match in set of lines
+
+            fp: str
+                content of lines to search
 
         Returns:
-            matches (array): indices of lines that mactch line_to_match
+            matches: array
+                indices of lines that mactch line_to_match
         """
         matches = []
         for i in range(len(fp)):

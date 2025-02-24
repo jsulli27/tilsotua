@@ -12,13 +12,17 @@ def create_ds9_file(data,theta,scale,ref_system,output_file):
     Function to generated the DS9 file. Creates the string for lines to be written to the DS9 file for each slit.
 
     Args:
-        data (table): table of mask data
+        data: table
+            table of mask data
 
-        theta (float): mask position angle
-        
-        ref_system (str): mask sky coordinate reference system
+        theta: float
+            mask position angle
 
-        output_file (str): outfile file base name
+        ref_system: str
+            mask sky coordinate reference system
+
+        output_file: str
+            outfile file base name
 
     Returns:
         None

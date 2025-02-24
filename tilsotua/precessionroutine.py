@@ -12,16 +12,21 @@ def precession(ra,dec,EPOCH,NEW_EPOCH):
     Function to precess a set of RA,Dec coordinates to a new equinox.
 
     Args:
-        RA (float): RA position in original epoch
+        RA: float
+            RA position in original epoch
 
-        Dec (float): Dec position in original epoch
+        Dec: float
+            Dec position in original epoch
 
-        EPOCH (float): original equinox of mask coordinates
-        
-        NEW_EPOCH (float): new equinox for coodinates
+        EPOCH: float
+            original equinox of mask coordinates
+
+        NEW_EPOCH: float
+            new equinox for coodinates
 
     Returns:
-        [RA,Dec] (array): RA, Dec positions in the new epoch.
+        [RA,Dec]: array
+            RA, Dec positions in the new epoch.
     """
     PI     = 3.14159265358979324
     RPD = PI/180.
@@ -81,13 +86,17 @@ def ROTATE(M,ALPHA,XOLD):
     Function to precess a set of RA,Dec coordinates to a new equinox.
 
     Args:
-        M (int): dimension of rotation
+        M: int
+            dimension of rotation
 
-        ALPHA (float): angle of rotation in radians
+        ALPHA: float
+            angle of rotation in radians
 
-        XOLD (array): original position
+        XOLD: array
+            original position
     Returns:
-        XNEW (array): Rotated position
+        XNEW: array
+            Rotated position
     """
     S = np.zeros(shape=(3,3))
 
@@ -115,11 +124,14 @@ def TRNSFM(S,XOLD):
     Function to multiple the coordinates by the transformation matrix for rotation.
 
     Args:
-        S (array): transformation matrix
+        S: array
+            transformation matrix
 
-        XOLD (array): Original position
+        XOLD: array
+            Original position
     Returns:
-        XNEW (array): Rotated position
+        XNEW: array
+            Rotated position
   """
   XNEW = np.zeros(3)
   for i in range(0,3):

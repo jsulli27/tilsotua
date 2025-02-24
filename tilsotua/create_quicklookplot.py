@@ -26,19 +26,25 @@ def create_qlp(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,output
     provided by the user.
 
     Args:
-        data (table): Mask information table
+        data: table
+            Mask information table
 
-        catalog_obj_ra (array): RA positions of objects associated with each alignment box.
+        catalog_obj_ra: array
+            RA positions of objects associated with each alignment box.
 
-        catalog_obj_dec (array): Dec positions of objects associated with each alignment box.
+        catalog_obj_dec: array
+            Dec positions of objects associated with each alignment box.
 
-        objects_ra (array): RA positions of ALL catalog objects around alignment boxes. Used
-        to show close objects not associated with alignment boxes.
+        objects_ra: array
+            RA positions of ALL catalog objects around alignment boxes. Used
+            to show close objects not associated with alignment boxes.
 
-        objects_dec (array): Dec positions of ALL catalog objects around alignment boxes. Used
-        to show close objects not associated with alignment boxes.
-        
-        output_file (str): Base name for output files
+        objects_dec: array
+            Dec positions of ALL catalog objects around alignment boxes. Used
+            to show close objects not associated with alignment boxes.
+
+        output_file: str
+            Base name for output files
     Returns:
         None
     """

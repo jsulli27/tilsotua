@@ -25,24 +25,33 @@ def get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccent
     which is checked before being applied to the mask.
 
     Args:
-        data (table): Mask information table
+        data: table
+            Mask information table
 
-        catalog_keyword (str): Name of catalog to query: gaia, panstarrs, or custom
+        catalog_keyword: str
+            Name of catalog to query: gaia, panstarrs, or custom
 
-        output_file (str): Base name for output files
+        output_file: str
+            Base name for output files
 
-        ref_system (str): Coordinate reference system used for mask
+        ref_system: str
+            Coordinate reference system used for mask
 
-        racenter (float): RA of mask center
+        racenter: float
+            RA of mask center
 
-        deccenter (float): Dec of mask center
+        deccenter: float
+            Dec of mask center
 
-        adcuse (str): Flag yes/no signaling whether the ADC was assumed to be in use with mask
-        
-        filename (str): Name of file with custom object catalog
+        adcuse: str
+            Flag yes/no signaling whether the ADC was assumed to be in use with mask
+
+        filename: str
+            Name of file with custom object catalog
 
     Returns:
-        data (table): Mask information table with updated (final) mask positions
+        data: table
+            Mask information table with updated (final) mask positions
     """
     #Set up arrays and columns to hold results
     rpd = np.pi/180.  #radians per degree
