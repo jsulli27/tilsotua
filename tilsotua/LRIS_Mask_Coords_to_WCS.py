@@ -42,26 +42,33 @@ def generate_object_cat(obj_file:str, file1:str, xy_map:Table,
     output fits file.
 
     Args:
-        obj_file (str): Path to object file fed to AUTOSLIT
+        obj_file: str
+            Path to object file fed to AUTOSLIT
 
-        file1 (str): Path to the autoslit object file
+        file1: str
+            Path to the autoslit object file
 
-        xy_map (Table): RA and Dec slit positions
+        xy_map: table
+            RA and Dec slit positions
 
-        mag_band (str, optional): This is the band in which
-        the object magnitudes are reported in the AUTOSLIT
-        files. Unfortunately, this info must be manually input to
-        this function as AUTOSLIT doesn't recieve/record it. Assumes
-        I band by default.
+        mag_band: str, optional
+            This is the band in which
+            the object magnitudes are reported in the AUTOSLIT
+            files. Unfortunately, this info must be manually input to
+            this function as AUTOSLIT doesn't recieve/record it. Assumes
+            I band by default.
 
     Returns:
-        ObjectCat (Table): Object catalog.
+        ObjectCat: table
+            Object catalog.
 
-        SlitObjMap (Table): Table mapping slits to catalog objects.
+        SlitObjMap: table
+            Table mapping slits to catalog objects.
 
-        DesiSlits (Table): Slit geometry parameter table. Does not
-        contain slitRA/slitDec columns. Those are filled outside
-        this function.
+        DesiSlits: table
+            Slit geometry parameter table. Does not
+            contain slitRA/slitDec columns. Those are filled outside
+            this function.
     """
     assert type(mag_band) == str, "Invalid band for magnitude"
 
