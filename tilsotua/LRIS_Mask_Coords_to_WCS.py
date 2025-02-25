@@ -297,7 +297,6 @@ def xytowcs(data_input_name:str,output_file:str,
     copyfile(data_input_name+'.fits', output_file+'.fits')
     #Open the copied file
     hdu=fits.open(output_file+'.fits',mode='update')
-    maskbluID = str(hdu['MaskBlu'].data['BluID'][0])
 
     #obtain the rotation angle of the instrument
     mask_design = hdu['MaskDesign'].data[0]
