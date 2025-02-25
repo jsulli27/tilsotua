@@ -1,5 +1,9 @@
-#code to query GAIA(or PanSTARRS or Custom) database for closest object to calculated coordinates
-
+"""
+Module to query GAIA (or PanSTARRS or Custom) database for closest object to calculated coordinates.
+Determines the offsets between catalog objects and alignment boxes centers, then applies the offset
+to the mask positions. The final mask position and information about the associated catalog objects
+is returned.
+"""
 #import packages
 import numpy as np
 from astropy.coordinates import SkyCoord, ICRS, Galactic, FK4, FK5
@@ -13,7 +17,42 @@ from astropy.io import ascii,fits
 import pyransac
 from pyransac import line2d
 
-def get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccenter,filename,adcuse,maskbluID):
+def get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccenter,adcuse,filename:str=None):
+    """
+    Queries the selected catalog (Gaia by default) for objects near alignment box centers. Associates the closest
+    object to each alignment box, calcualtes the offsets between object positions and alignment box centers,
+    then determines outliers for the assumed linear shift. Remaining offsets are used to determine the final shift,
+    which is checked before being applied to the mask.
+
+    Args:
+        data: table
+            Mask information table
+
+        catalog_keyword: str
+            Name of catalog to query: gaia, panstarrs, or custom
+
+        output_file: str
+            Base name for output files
+
+        ref_system: str
+            Coordinate reference system used for mask
+
+        racenter: float
+            RA of mask center
+
+        deccenter: float
+            Dec of mask center
+
+        adcuse: str
+            Flag yes/no signaling whether the ADC was assumed to be in use with mask
+
+        filename: str
+            Name of file with custom object catalog
+
+    Returns:
+        data: table
+            Mask information table with updated (final) mask positions
+    """
     #Set up arrays and columns to hold results
     rpd = np.pi/180.  #radians per degree
     ra_shifts=[]
@@ -74,8 +113,8 @@ def get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccent
                 width = 400*u.arcsec
                 height = 400*u.arcsec
                 obj = Gaia.query_object_async(coordinate=coord, width=width,height=height)
-                mag_cutoff = (obj['phot_g_mean_flux']>18.)
-                obj = obj[mag_cutoff]
+                #mag_cutoff = (obj['phot_g_mean_flux']>18.)
+                #obj = obj[mag_cutoff]
 
                 objects_ra.append(obj['ra'])
                 objects_dec.append(obj['dec'])

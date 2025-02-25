@@ -1,5 +1,6 @@
-#Create the quick look plot of the mask results and save as a pdf
-
+"""
+Module to create the quick look plot of the mask results and save as a pdf.
+"""
 import subprocess
 import os
 from astropy.io import fits
@@ -18,6 +19,35 @@ import astropy.units as u
 
 #Function to create the quick look plots of the mask results
 def create_qlp(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,output_file):
+    """
+    Creates the quick look plot of the final slitmask position. Downloads the PanSTARRS
+    g-band image of the field, plots the mask on the field and creates image cutouts for
+    up to six alignment boxes. Saves the file as a PDF with the output_file base name
+    provided by the user.
+
+    Args:
+        data: table
+            Mask information table
+
+        catalog_obj_ra: array
+            RA positions of objects associated with each alignment box.
+
+        catalog_obj_dec: array
+            Dec positions of objects associated with each alignment box.
+
+        objects_ra: array
+            RA positions of ALL catalog objects around alignment boxes. Used
+            to show close objects not associated with alignment boxes.
+
+        objects_dec: array
+            Dec positions of ALL catalog objects around alignment boxes. Used
+            to show close objects not associated with alignment boxes.
+
+        output_file: str
+            Base name for output files
+    Returns:
+        None
+    """
     data_copy = data['Calc_RA','Calc_Dec','X','Y']
     #Calculate the center of the mask to provide PanSTAMPS to download the image for the mask field  (should I just send over the actual center coords)
     x_center = np.average(data_copy['Calc_RA'])
@@ -37,7 +67,7 @@ def create_qlp(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,output
 #=================================================================================================================================
     #Set up the grid for the plot panels using GridSpec
     wcs = WCS(hdu.header)
-    
+
     fig = plt.figure(constrained_layout=True,figsize=(7,4))
     gs = GridSpec(3, 3, figure=fig,width_ratios = [3,1,1],height_ratios=[1,1,1])
     ax1 = fig.add_subplot(gs[:, :-2],projection=wcs)
@@ -190,7 +220,7 @@ def create_qlp(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,output
                 temp1c = SkyCoord(catalog_obj_ra,catalog_obj_dec,unit=(u.deg,u.deg))
                 box_obj = np.argmin(temp1c.separation(temp1b).arcsec)
                 pixels1c = utils.skycoord_to_pixel(temp1c[box_obj], wcs=wcs, origin=1, mode='all')
-                ax2.scatter(pixels1c[0],pixels1c[1],zorder=5,color='yellow')#,transform=ax2.get_transform('fk5'))
+                ax2.scatter(pixels1c[0],pixels1c[1],zorder=5,color='yellow',s=12)#,transform=ax2.get_transform('fk5'))
                 #ax2.scatter(catalog_obj_ra[boxes-1],catalog_obj_dec[boxes-1],zorder=5,color='yellow',transform=ax2.get_transform('fk5'))
                 pixelcoordsra= []
                 pixelcoordsdec= []
@@ -199,7 +229,7 @@ def create_qlp(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,output
                     temp2 = utils.skycoord_to_pixel(temp, wcs=wcs, origin=1, mode='all')
                     pixelcoordsra.append(temp2[0])
                     pixelcoordsdec.append(temp2[1])
-                ax2.scatter(pixelcoordsra,pixelcoordsdec,zorder=4,color='orange')
+                ax2.scatter(pixelcoordsra,pixelcoordsdec,zorder=4,color='orange',s=12)
                 ax2.text(np.min(vertices[0:4,0])-ra_buffer/3,np.min(vertices[0:4,1])-dec_buffer/3,str(box_numbers[boxes-1]),color='blue',transform=ax2.get_transform('fk5'))
                 ax2.set_xlim([pixels1a[0],pixels1b[0]])
                 ax2.set_ylim([pixels1a[1],pixels1b[1]])
@@ -220,7 +250,7 @@ def create_qlp(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,output
                 temp1c = SkyCoord(catalog_obj_ra,catalog_obj_dec,unit=(u.deg,u.deg))
                 box_obj = np.argmin(temp1c.separation(temp1b).arcsec)
                 pixels1c = utils.skycoord_to_pixel(temp1c[box_obj], wcs=wcs, origin=1, mode='all')
-                ax3.scatter(pixels1c[0],pixels1c[1],zorder=5,color='yellow')
+                ax3.scatter(pixels1c[0],pixels1c[1],zorder=5,color='yellow',s=12)
                 #ax3.scatter(catalog_obj_ra[boxes-1],catalog_obj_dec[boxes-1],zorder=5,color='yellow',transform=ax3.get_transform('world'))
                 pixelcoordsra= []
                 pixelcoordsdec= []
@@ -229,7 +259,7 @@ def create_qlp(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,output
                     temp2 = utils.skycoord_to_pixel(temp, wcs=wcs, origin=1, mode='all')
                     pixelcoordsra.append(temp2[0])
                     pixelcoordsdec.append(temp2[1])
-                ax3.scatter(pixelcoordsra,pixelcoordsdec,zorder=4,color='orange')
+                ax3.scatter(pixelcoordsra,pixelcoordsdec,zorder=4,color='orange',s=12)
                 #ax3.scatter(objects_ra[boxes-1],objects_dec[boxes-1],zorder=4,color='purple',transform=ax3.get_transform('fk5'))
                 ax3.text(np.min(vertices[0:4,0])-ra_buffer/3,np.min(vertices[0:4,1])-dec_buffer/3,str(box_numbers[boxes-1]),color='blue',transform=ax3.get_transform('fk5'))
                 ax3.set_xlim([pixels1a[0],pixels1b[0]])
@@ -251,7 +281,7 @@ def create_qlp(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,output
                 temp1c = SkyCoord(catalog_obj_ra,catalog_obj_dec,unit=(u.deg,u.deg))
                 box_obj = np.argmin(temp1c.separation(temp1b).arcsec)
                 pixels1c = utils.skycoord_to_pixel(temp1c[box_obj], wcs=wcs, origin=1, mode='all')
-                ax4.scatter(pixels1c[0],pixels1c[1],zorder=5,color='yellow')
+                ax4.scatter(pixels1c[0],pixels1c[1],zorder=5,color='yellow',s=12)
                 #ax4.scatter(catalog_obj_ra[boxes-1],catalog_obj_dec[boxes-1],zorder=5,color='yellow',transform=ax4.get_transform('world'))
                 pixelcoordsra= []
                 pixelcoordsdec= []
@@ -260,7 +290,7 @@ def create_qlp(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,output
                     temp2 = utils.skycoord_to_pixel(temp, wcs=wcs, origin=1, mode='all')
                     pixelcoordsra.append(temp2[0])
                     pixelcoordsdec.append(temp2[1])
-                ax4.scatter(pixelcoordsra,pixelcoordsdec,zorder=4,color='orange')
+                ax4.scatter(pixelcoordsra,pixelcoordsdec,zorder=4,color='orange',s=12)
               #  ax4.scatter(objects_ra[boxes-1],objects_dec[boxes-1],zorder=4,color='purple',transform=ax4.get_transform('fk5'))
                 ax4.text(np.min(vertices[0:4,0])-ra_buffer/3,np.min(vertices[0:4,1])-dec_buffer/3,str(box_numbers[boxes-1]),color='blue',transform=ax4.get_transform('fk5'))
                 ax4.set_xlim([pixels1a[0],pixels1b[0]])
@@ -282,7 +312,7 @@ def create_qlp(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,output
                 temp1c = SkyCoord(catalog_obj_ra,catalog_obj_dec,unit=(u.deg,u.deg))
                 box_obj = np.argmin(temp1c.separation(temp1b).arcsec)
                 pixels1c = utils.skycoord_to_pixel(temp1c[box_obj], wcs=wcs, origin=1, mode='all')
-                ax5.scatter(pixels1c[0],pixels1c[1],zorder=5,color='yellow')
+                ax5.scatter(pixels1c[0],pixels1c[1],zorder=5,color='yellow',s=12)
                 #ax5.scatter(catalog_obj_ra[boxes-1],catalog_obj_dec[boxes-1],zorder=5,color='yellow',transform=ax5.get_transform('world'))
                 pixelcoordsra= []
                 pixelcoordsdec= []
@@ -291,7 +321,7 @@ def create_qlp(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,output
                     temp2 = utils.skycoord_to_pixel(temp, wcs=wcs, origin=1, mode='all')
                     pixelcoordsra.append(temp2[0])
                     pixelcoordsdec.append(temp2[1])
-                ax5.scatter(pixelcoordsra,pixelcoordsdec,zorder=4,color='orange')
+                ax5.scatter(pixelcoordsra,pixelcoordsdec,zorder=4,color='orange',s=12)
               #  ax5.scatter(objects_ra[boxes-1],objects_dec[boxes-1],zorder=4,color='purple',transform=ax5.get_transform('fk5'))
                 ax5.text(np.min(vertices[0:4,0])-ra_buffer/3,np.min(vertices[0:4,1])-dec_buffer/3,str(box_numbers[boxes-1]),color='blue',transform=ax5.get_transform('fk5'))
                 ax5.set_xlim([pixels1a[0],pixels1b[0]])
@@ -313,7 +343,7 @@ def create_qlp(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,output
                 temp1c = SkyCoord(catalog_obj_ra,catalog_obj_dec,unit=(u.deg,u.deg))
                 box_obj = np.argmin(temp1c.separation(temp1b).arcsec)
                 pixels1c = utils.skycoord_to_pixel(temp1c[box_obj], wcs=wcs, origin=1, mode='all')
-                ax6.scatter(pixels1c[0],pixels1c[1],zorder=5,color='yellow')
+                ax6.scatter(pixels1c[0],pixels1c[1],zorder=5,color='yellow',s=12)
                 #ax6.scatter(catalog_obj_ra[boxes-1],catalog_obj_dec[boxes-1],zorder=5,color='yellow',transform=ax6.get_transform('world'))
                 pixelcoordsra= []
                 pixelcoordsdec= []
@@ -322,7 +352,7 @@ def create_qlp(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,output
                     temp2 = utils.skycoord_to_pixel(temp, wcs=wcs, origin=1, mode='all')
                     pixelcoordsra.append(temp2[0])
                     pixelcoordsdec.append(temp2[1])
-                ax6.scatter(pixelcoordsra,pixelcoordsdec,zorder=4,color='orange')
+                ax6.scatter(pixelcoordsra,pixelcoordsdec,zorder=4,color='orange',s=12)
             #    ax6.scatter(objects_ra[boxes-1],objects_dec[boxes-1],zorder=4,color='purple',transform=ax6.get_transform('fk5'))
                 ax6.text(np.min(vertices[0:4,0])-ra_buffer/3,np.min(vertices[0:4,1])-dec_buffer/3,str(box_numbers[boxes-1]),color='blue',transform=ax6.get_transform('fk5'))
                 ax6.set_xlim([pixels1a[0],pixels1b[0]])
@@ -344,7 +374,7 @@ def create_qlp(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,output
                 temp1c = SkyCoord(catalog_obj_ra,catalog_obj_dec,unit=(u.deg,u.deg))
                 box_obj = np.argmin(temp1c.separation(temp1b).arcsec)
                 pixels1c = utils.skycoord_to_pixel(temp1c[box_obj], wcs=wcs, origin=1, mode='all')
-                ax7.scatter(pixels1c[0],pixels1c[1],zorder=5,color='yellow')
+                ax7.scatter(pixels1c[0],pixels1c[1],zorder=5,color='yellow',s=12)
                 #ax7.scatter(catalog_obj_ra[boxes-1],catalog_obj_dec[boxes-1],zorder=5,color='yellow',transform=ax7.get_transform('world'))
                 pixelcoordsra= []
                 pixelcoordsdec= []
@@ -353,7 +383,7 @@ def create_qlp(data,catalog_obj_ra,catalog_obj_dec,objects_ra,objects_dec,output
                     temp2 = utils.skycoord_to_pixel(temp, wcs=wcs, origin=1, mode='all')
                     pixelcoordsra.append(temp2[0])
                     pixelcoordsdec.append(temp2[1])
-                ax7.scatter(pixelcoordsra,pixelcoordsdec,zorder=4,color='orange')
+                ax7.scatter(pixelcoordsra,pixelcoordsdec,zorder=4,color='orange',s=12)
            #     ax7.scatter(objects_ra[boxes-1],objects_dec[boxes-1],zorder=4,color='purple',transform=ax7.get_transform('fk5'))
                 ax7.text(np.min(vertices[0:4,0])-ra_buffer/3,np.min(vertices[0:4,1])-dec_buffer/3,str(box_numbers[boxes-1]),color='blue',transform=ax7.get_transform('fk5'))
                 ax7.set_xlim([pixels1a[0],pixels1b[0]])

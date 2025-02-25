@@ -1,4 +1,8 @@
-#Function to read in data from the autoslit files
+"""
+Module to construct a new mask FITS file from autoslit output .file3.
+Writes a mask file in the structure of the UCO/Lick archive mask files with
+slit locations and basic mask design information.
+"""
 
 from astropy.table import Table,vstack
 from shutil import copyfile
@@ -11,15 +15,15 @@ import numpy as np
 def gen_from_auto(autofile):
     """
     Generate a FITS file similar to the UCO/Lick archival masks from the autoslit
-    output file.
+    output file. Note that the mask design date is a placeholder meant to trigger whether the
+    ADC was used for caluclations in the main code.
+
     Args:
-    autofile (str): Path to autoslit output file fed to AUTOSLIT
+        autofile: str
+            Path to autoslit output .file3 for mask
 
     Returns:
-    None
-
-    Note that the mask design date is a placeholder meant to trigger whether the
-    ADC was used for caluclations in the main code.
+        None
     """
 
     dir_loc = str(pathlib.Path(__file__).parent.resolve())
@@ -41,7 +45,19 @@ def gen_from_auto(autofile):
 
     #read in the X_mask,Y_mask slit positions
     def lines_that_equal(line_to_match, fp):
-        #search for the lines in a file that
+        """
+        Function to search for the lines in a file that match a given string
+        Args:
+            line_to_match: str
+                string to exactly match in set of lines
+
+            fp: str
+                content of lines to search
+
+        Returns:
+            matches: array
+                indices of lines that mactch line_to_match
+        """
         matches = []
         for i in range(len(fp)):
             line = fp[i]
